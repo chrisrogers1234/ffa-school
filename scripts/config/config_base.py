@@ -60,13 +60,18 @@ class Config(object):
         "required_n_hits":500,
         "max_iterations":10.,
     }
+    
+    track_beam = {
+        "eps_max":1e9,
+    }
 
     substitution_list = [get_baseline_substitution()]
     
     run_control = {
         "find_closed_orbits":False,
         "find_tune":False,
-        "find_da":True,
+        "find_da":False,
+        "track_beam":True,
         "clean_output_dir":False,
         "output_dir":os.path.join(os.getcwd(), "output/baseline"),
     }

@@ -8,6 +8,7 @@ import xboa.common
 import find_closed_orbits
 import find_tune
 import find_da
+import track_beam
 
 def get_config():
     config_file = sys.argv[1].replace(".py", "")
@@ -43,6 +44,9 @@ def main():
         find_tune.main(config)
     if config.run_control["find_da"]:
         find_da.main(config)
+    if config.run_control["track_beam"]:
+        track_beam.main(config)
+
     
 if __name__ == "__main__":
     main()

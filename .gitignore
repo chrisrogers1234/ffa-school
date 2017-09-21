@@ -1,1 +1,4 @@
 *.pyc
+iteration_*
+logs
+output

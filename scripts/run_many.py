@@ -80,6 +80,8 @@ def main():
     if os.getenv("OPAL_EXE_PATH") == None:
         raise ValueError("No OPAL_EXE_PATH set")
     global N_PROCS, TARGET_SCRIPT, UNIQUE_ID
+    if not os.path.exists("logs"):
+        os.makedir("logs")
     if is_scarf():
         N_PROCS = 150
     for config in config_list():
