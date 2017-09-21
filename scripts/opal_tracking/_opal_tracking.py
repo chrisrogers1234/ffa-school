@@ -64,18 +64,13 @@ class OpalTracking(TrackingBase):
         self.do_tracking = True
         self.log_filename = log_filename
         self.save_dir = save_dir
-        # clear any existing files (to prevent reloading "stale" files)
-        #for a_file in glob.glob(self.output_name):
-        #    os.remove(a_file)
-
 
     def save(self):
         """
-        If save_dir is defined, output files will be saved here; otherwise they
-        are deleted
+        If save_dir is defined, output files will be saved here; otherwise does 
+        nothing
         """
         if self.save_dir == None:
-            self.cleanup()
             return
         for probe_file in glob.glob(output_filename):
             target = os.path.join(self.save_dir, probe_file)
@@ -85,7 +80,7 @@ class OpalTracking(TrackingBase):
         """
         Delete output files (prior to tracking)
         """
-        for probe_file in glob.glob("tmp/PROBE*.loss"):
+        for probe_file in glob.glob(self.output_name):
             os.unlink(probe_file)
 
     def track_one(self, hit):
@@ -105,7 +100,6 @@ class OpalTracking(TrackingBase):
         within each event.
         """
         if self.do_tracking:
-            self.cleanup()
             self._tracking(list_of_hits)
         hit_list_of_lists = self._read_probes()
         self.save()
@@ -138,14 +132,10 @@ class OpalTracking(TrackingBase):
             z = (hit["z"]-self.ref["z"])/m
             px = (hit["px"]-self.ref["px"])/p_mass
             py = (hit["pz"]-self.ref["pz"])/p_mass
-            pz = (hit["py"]-self.ref["py"])/p_mass # NOTE! Wrong Units
+            pz = (hit["py"]-self.ref["py"])/p_mass
             print >> fout, x, px, z, pz, y, py
         fout.close()
-        try:
-            os.remove(self.output_name) # make sure we don't load an old PROBE file
-        except OSError:
-            pass
-        print self.opal_path
+        self.cleanup()
         proc = subprocess.Popen([self.opal_path, self.lattice_filename],
                                 stdout=log_file,
                                 stderr=subprocess.STDOUT)

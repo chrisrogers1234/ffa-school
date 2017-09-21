@@ -5,9 +5,9 @@ import config_base
 
 def get_substitution_list():
     substitution_list = []
-    for index in range(10, 21):
+    for index in range(10):
         sub = config_base.get_baseline_substitution()
-        sub["__field_index__"] = index
+        sub["__field_index__"] = 3+index/2.
         substitution_list.append(sub)
     print json.dumps(substitution_list, indent=2)
     return substitution_list

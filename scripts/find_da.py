@@ -93,11 +93,11 @@ class DAFinder(object):
         lattice_src = self.config.tracking["lattice_file"]
         common.substitute(
             lattice_src, 
-            self.run_dir+"/Tune.tmp",
+            self.run_dir+"/SectorFFAGMagnet.tmp",
             subs
         )
         tracking_file = self.config.find_da["probe_files"]
-        self.tracking = OpalTracking(self.run_dir+"/Tune.tmp", self.tmp_dir+'/disttest.dat', self.ref_hit, tracking_file, self.opal_exe, self.tmp_dir+"/log")
+        self.tracking = OpalTracking(self.run_dir+"/SectorFFAGMagnet.tmp", self.tmp_dir+'/disttest.dat', self.ref_hit, tracking_file, self.opal_exe, self.tmp_dir+"/log")
 
     def new_seed(self):
         if self.data[-1][0] < self.min_delta: # reference run?

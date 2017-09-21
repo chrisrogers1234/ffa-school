@@ -34,8 +34,8 @@ def plot_data_1d(data, tune_axis, plot_dir, cell_conversion = 1):
         graph_y.SetMarkerColor(4)
         graph_x.Draw("PSAME")
         graph_y.Draw("PSAME")
-        legend = xboa.common.make_root_legend(canvas, [graph_x, graph_y])
-        legend.Draw()
+        #legend = xboa.common.make_root_legend(canvas, [graph_x, graph_y])
+        #legend.Draw()
         canvas.Update()
         canvas_name = canvas_name.replace(" ", "_")
         for format in "eps", "png", "root":
@@ -65,13 +65,16 @@ def plot_data_2d(data, tune_axis, plot_dir):
 
 def main():
     base_fname = "output/baseline/find_tune"
-    for file_name in glob.glob("output/*/find_tune"):
+    for file_name in glob.glob("output/*/find_tune"): #+glob.glob("iteration_2*/*/find_tune"):
         plot_dir = os.path.split(file_name)[0]
-        data = load_file(file_name)
-        if file_name != base_fname:
-            data += load_file("output/baseline/find_tune")
+        try:
+            data = load_file(file_name)
+        except IndexError:
+            continue
+        #if file_name != base_fname:
+        #    data += load_file("output/baseline/find_tune")
         plot_data_1d(data, 'cell tune', plot_dir, 1) # or ring tune
-        plot_data_1d(data, 'ring tune', plot_dir, 24) # or ring tune
+        #plot_data_1d(data, 'ring tune', plot_dir, 8) # or ring tune
         #plot_data_2d(data, 'cell tune', plot_dir) # or ring tune
 
 if __name__ == "__main__":

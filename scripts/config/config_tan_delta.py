@@ -7,7 +7,7 @@ def get_substitution_list():
     substitution_list = []
     for index in range(11):
         sub = config_base.get_baseline_substitution()
-        sub["__tan_delta__"] = index*0.2
+        sub["__tan_delta__"] = index*0.1
         substitution_list.append(sub)
     print json.dumps(substitution_list, indent=2)
     return substitution_list

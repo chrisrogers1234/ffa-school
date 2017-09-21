@@ -29,20 +29,16 @@ def tune_lines(canvas, min_order=0, max_order=8):
 
 def get_substitutions_axis(data):
     subs_ref = data[0]['substitutions']
-    print subs_ref
     axis_candidates = {}
     for item in data:
         subs = item['substitutions']
-        print subs
         for key in subs.keys():
             if subs[key] != subs_ref[key]:
-                print key, subs[key],
                 try:
                     float(subs[key])
                     axis_candidates[key] = []
                 except TypeError:
                     continue
-        print
     for item in data:
         for key in axis_candidates:
             axis_candidates[key].append(item['substitutions'][key])

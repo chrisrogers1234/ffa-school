@@ -4,6 +4,7 @@ Plot a single closed orbit (once tracking has finished)
 
 import copy
 import math
+import numpy
 import plot_dump_fields
 
 try:
@@ -49,7 +50,7 @@ def parse_file(file_name, heading, types):
 
 def parse_track_file(filename):
     file_name = filename
-    heading = ["id", "x", "px", "y", "py", "z", "pz", "bx", "by", "bz"]
+    heading = ["id", "x", "px", "y", "py", "z", "pz"]
     types = [str]+[float]*(len(heading)-1)
     data = parse_file(file_name, heading, types)
     data = r_phi_track_file(data)
@@ -95,6 +96,30 @@ def plot_x_y_projection(step_list, canvas = None):
     RootObjects.graphs.append(graph)
     return canvas, axes, graph
 
+def plot_r_phi_projection(step_list, canvas = None):
+    axes = None
+    if canvas == None:
+        canvas = ROOT.TCanvas("x_y_projection", "x_y_projection")
+        canvas.Draw()
+        axes = ROOT.TH2D("x_y_projection_axes", ";#phi [degree];r [m]",
+                         1000, -180., 180.,
+                         1000, 1., 4.)
+        axes.SetStats(False)
+        axes.Draw()
+        RootObjects.histograms.append(axes)
+    else:
+        canvas.cd()
+    graph = ROOT.TGraph(len(step_list))
+    points = zip(step_list["phi"], step_list["r"])
+    points = sorted(points)
+    for i in range(len(step_list["r"])):
+        graph.SetPoint(i, points[i][0], points[i][1])
+    graph.Draw("l")
+    canvas.Update()
+    RootObjects.canvases.append(canvas)
+    RootObjects.graphs.append(graph)
+    return canvas, axes, graph
+
 def plot_x_z_projection(step_list):
     canvas = ROOT.TCanvas("x_z_projection", "x_z_projection")
     axes = ROOT.TH2D("x_z_projection_axes", ";phi [rad];z [m]",
@@ -113,10 +138,17 @@ def plot_x_z_projection(step_list):
     RootObjects.graphs.append(graph)
     return canvas, axes, graph
 
+def step_statistics(step_list):
+    delta_r_list = []
+    for i in range(len(step_list["x"])-1):
+        delta_x = step_list["x"][i+1]-step_list["x"][i]
+        delta_y = step_list["y"][i+1]-step_list["y"][i]
+        delta_z = step_list["z"][i+1]-step_list["z"][i]
+        delta_r_list.append((delta_x**2+delta_y**2+delta_z**2)**0.5)
+    print "Mean step size:", numpy.mean(delta_r_list), "RMS:", numpy.std(delta_r_list)
 
-def plot_beam_pipe(inner_radius, outer_radius, canvas=None):
+def plot_beam_pipe(inner_radius, outer_radius, n_periods, canvas=None):
     n_steps = 361 # number of azimuthal steps
-    n_periods = 24
 
     if canvas == None:
         canvas = ROOT.TCanvas("beam_pipe", "beam_pipe")
@@ -171,17 +203,134 @@ def plot_b_field(step_list):
     RootObjects.graphs.append(graph)
     return canvas, axes, graph
 
-def main():
-    step_list = parse_track_file("tmp/find_closed_orbits/SectorFFAGMagnet-trackOrbit.dat")
-    field_plot = plot_dump_fields.PlotDumpFields("tmp/FieldMapXY.dat")
-    canvas = field_plot.plot()
-    canvas, axes, graph = plot_x_y_projection(step_list, canvas)
-    plot_beam_pipe(22.5, 23.5, canvas)
+def scrape_vector(line):
+    vector = line.split("(")[1]
+    vector = vector.split(")")[0]
+    vector = [float(number)/1000. for number in vector.split(",")]
+    return vector
+
+def get_elements(log_file):
+    log_file = open(log_file)
+    start_positions = []
+    for line in log_file.readlines():
+        if "Start position (" not in line:
+            continue
+        start_positions.append(scrape_vector(line))
+    return start_positions
+  
+def plot_elements_xz(log_file, canvas):
+    start_positions = get_elements(log_file)
+    canvas.cd()
+    graph = ROOT.TGraph(len(start_positions))
+    for i, pos in enumerate(start_positions):
+        phi = math.atan2(pos[1], pos[0])
+        graph.SetPoint(i, phi, pos[2])
+    RootObjects.graphs.append(graph)
+    graph.SetMarkerStyle(7)
+    graph.Draw("PSAME")
+    canvas.Update()
+    return graph
+
+def plot_elements_xy(log_file, canvas):
+    start_positions = get_elements(log_file)
+    canvas.cd()
+    graph = ROOT.TGraph(len(start_positions))
+    for i, pos in enumerate(start_positions):
+        graph.SetPoint(i, pos[0], pos[1])
+    RootObjects.graphs.append(graph)
+    graph.SetMarkerStyle(7)
+    graph.Draw("PSAME")
+    canvas.Update()
+    return graph
+
+def main(output_dir, run_dir, run_file):
+    output_dir += "/"
+    opal_run_dir = output_dir+run_dir
+    step_list = parse_track_file(opal_run_dir+run_file)
+    field_plot = plot_dump_fields.PlotDumpFields(opal_run_dir+"FieldMapRPHI_Offset.dat", True)
+    field_plot.load_dump_fields()
+    canvas_bz_offset = field_plot.plot_dump_fields("phi", "r", "bz")
+    plot_r_phi_projection(step_list, canvas_bz_offset)
     for format in "png", "root", "eps":
-        canvas.Print("plots/closed_orbit."+format)
-    #canvas, axes, graph = plot_x_z_projection(step_list)
+        canvas_bz_offset.Print(output_dir+"closed_orbit_cylindrical_bz."+format)
+    canvas_br_offset = field_plot.plot_dump_fields("phi", "r", "br")
+    plot_r_phi_projection(step_list, canvas_br_offset)
+    for format in "png", "root", "eps":
+        canvas_br_offset.Print(output_dir+"closed_orbit_cylindrical_br."+format)
+    canvas_bphi_offset = field_plot.plot_dump_fields("phi", "r", "bphi")
+    plot_r_phi_projection(step_list, canvas_bphi_offset)
+    for format in "png", "root", "eps":
+        canvas_bphi_offset.Print(output_dir+"closed_orbit_cylindrical_bphi."+format)
+
+    canvas_bphi_offset = field_plot.plot_dump_fields("phi", "r", "bx")
+    plot_r_phi_projection(step_list, canvas_bphi_offset)
+    for format in "png", "root", "eps":
+        canvas_bphi_offset.Print(output_dir+"closed_orbit_cylindrical_bx."+format)
+
+    canvas_bphi_offset = field_plot.plot_dump_fields("phi", "r", "by")
+    plot_r_phi_projection(step_list, canvas_bphi_offset)
+    for format in "png", "root", "eps":
+        canvas_bphi_offset.Print(output_dir+"closed_orbit_cylindrical_by."+format)
+
+    canvas, axes, graph = plot_x_z_projection(step_list)
+    #plot_elements_xz(opal_run_dir+"log", canvas)
+    for format in "png", "root", "eps":
+        canvas.Print(output_dir+"closed_orbit_elevation."+format)
+
+    field_plot = plot_dump_fields.PlotDumpFields(opal_run_dir+"FieldMapXY-zoom.dat")
+    field_plot.load_dump_fields()
+
+    canvas = field_plot.plot_dump_fields("x", "y", "bz")
+    canvas, axes, graph = plot_x_y_projection(step_list, canvas)
+    plot_beam_pipe(2.7, 3.7, 12, canvas)
+    #plot_elements_xy(opal_run_dir+"log", canvas)
+    for format in "png", "root", "eps":
+        canvas.Print(output_dir+"closed_orbit_plan-zoom."+format)
+
+    field_plot = plot_dump_fields.PlotDumpFields(opal_run_dir+"FieldMapXY.dat")
+    field_plot.load_dump_fields()
+
+    canvas = field_plot.plot_dump_fields("x", "y", "bz")
+    canvas, axes, graph = plot_x_y_projection(step_list, canvas)
+    plot_beam_pipe(2.7, 3.7, 12, canvas)
+    #plot_elements_xy(opal_run_dir+"log", canvas)
+    for format in "png", "root", "eps":
+        canvas.Print(output_dir+"closed_orbit_plan_bz."+format)
+
+    canvas = field_plot.plot_dump_fields("x", "y", "bx")
+    canvas, axes, graph = plot_x_y_projection(step_list, canvas)
+    plot_beam_pipe(2.7, 3.7, 12, canvas)
+    #plot_elements_xy(opal_run_dir+"log", canvas)
+    for format in "png", "root", "eps":
+        canvas.Print(output_dir+"closed_orbit_cartesian_bx."+format)
+
+    canvas = field_plot.plot_dump_fields("x", "y", "by")
+    canvas, axes, graph = plot_x_y_projection(step_list, canvas)
+    plot_beam_pipe(2.7, 3.7, 12, canvas)
+    #plot_elements_xy(opal_run_dir+"log", canvas)
+    for format in "png", "root", "eps":
+        canvas.Print(output_dir+"closed_orbit_cartesian_by."+format)
+
+    canvas = field_plot.plot_dump_fields("x", "y", "br")
+    canvas, axes, graph = plot_x_y_projection(step_list, canvas)
+    plot_beam_pipe(2.7, 3.7, 12, canvas)
+    #plot_elements_xy(opal_run_dir+"log", canvas)
+    for format in "png", "root", "eps":
+        canvas.Print(output_dir+"closed_orbit_cartesian_br."+format)
+
+    canvas = field_plot.plot_dump_fields("x", "y", "bphi")
+    canvas, axes, graph = plot_x_y_projection(step_list, canvas)
+    plot_beam_pipe(2.7, 3.7, 12, canvas)
+    #plot_elements_xy(opal_run_dir+"log", canvas)
+    for format in "png", "root", "eps":
+        canvas.Print(output_dir+"closed_orbit_cartesian_bphi."+format)
+
+    step_statistics(step_list)
 
 if __name__ == "__main__":
-    main()
+    output_dir = "output/baseline/"
+    run_dir = "tmp/find_closed_orbits/"
+    run_file = "SectorFFAGMagnet-trackOrbit.dat"
+    main(output_dir, run_dir, run_file)
     raw_input()
 

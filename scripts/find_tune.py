@@ -18,6 +18,8 @@ from xboa.algorithms.tune import DPhiTuneFinder
 
 import utilities
 
+# CHECK - why is there a sign error?
+
 class Tune(object):
     def __init__(self, config):
         """
@@ -45,7 +47,7 @@ class Tune(object):
         self.step_size = config.tracking["step_size"]
         self.config = config
 
-        self.lattice = "/Tune.tmp"
+        self.lattice = "/SectorFFAGMagnet.tmp"
         self.beam_file = "/disttest.dat"
         self.log_file = "/log"
         self.output_filename = config.find_tune["output_file"]
@@ -97,18 +99,17 @@ class Tune(object):
                 for track_index, track in enumerate(tracking.last):
                     print 'Track', track_index, 'of', len(tracking.last), \
                           'with', len(track), 'hits'
-                    for hit in track:
-                        print '    ', hit['t'], 'polar:', math.atan2(hit['y'], \
-                              hit['x']), (hit['y']**2+hit['x']**2)**0.5, \
-                              'cart:', hit['x'], hit['y'], hit['z']
+                    #for hit in track:
+                    #    print '    ', hit['t'], 'polar:', math.atan2(hit['y'], \
+                    #          hit['x']), (hit['y']**2+hit['x']**2)**0.5, \
+                    #          'cart:', hit['x'], hit['y'], hit['z']
                 finder.u = finder.u[1:]
                 finder.up = finder.up[1:]
                 try:
                     tune = finder.get_tune(subs["__n_turns__"]/10.)
                 except:
                     tune = 0.
-                print '  Dphi list:'
-                print '   ', finder.dphi
+                print '  Found', len(finder.dphi), 'dphi elements'
                 tune_info[axis1+"_tune"] = tune
                 tune_info[axis1+"_tune_error"] = finder.tune_error
                 tune_info[axis1+"_signal"] = zip(finder.u, finder.up)
@@ -123,7 +124,7 @@ class Tune(object):
                     canvas.Print(name+"."+format)
 
             for key in sorted(tune_info.keys()):
-                if "signal" not in key:
+                if "signal" not in key and "dphi" not in key:
                     print "   ", key, tune_info[key]
             print >> fout, json.dumps(tune_info)
             fout.flush()

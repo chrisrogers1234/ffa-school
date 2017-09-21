@@ -4,6 +4,7 @@ import json
 import ROOT
 import xboa.common as common
 import utilities
+from xboa.hit import Hit
 
 def load_data(file_name):
     fin = open(file_name)
@@ -24,7 +25,7 @@ def plot_da(data, max_n_points, plot_dir):
         for da_key in 'x_da', 'y_da':
             if da_key not in item.keys():
                 continue
-            for axis1, axis2 in ('x', 'px'), ('y', 'py'):
+            for axis1, axis2 in ('x', 'px'), ('y', 'py'), ('x', "x'"), ('y', "y'"):
                 canvas = plot_one_da(item, da_key, axis1, axis2, max_n_points, variables)
                 plot_name = "da_"+str(index)+"_"+da_key+"_"+axis1+"_"+axis2
                 for format in ["eps", "png", "root"]:
@@ -57,11 +58,14 @@ def plot_one_da(row_data, da_key, axis1, axis2, max_n_points, variables):
     canvas = None
     da_row = get_da_row(hit_data, max_n_points)
     graph_list = []
+    units = {'x':'mm', 'y':'mm', 'px':'MeV/c', 'py':'MeV/c', "x'":'rad', "y'":'rad'}
     for i, hit_list in enumerate(hit_data):
-        hit_list = hit_list[1]
+        hit_list = [Hit.new_from_dict(hit_dict) for hit_dict in hit_list[1]]
         x_data = [hit[axis1] for hit in hit_list]
         y_data = [hit[axis2] for hit in hit_list]
-        hist, graph = common.make_root_graph(name+" "+str(i), x_data, axis1, y_data, axis2)
+        axis1_label = axis1+" ["+units[axis1]+"]"
+        axis2_label = axis2+" ["+units[axis2]+"]"
+        hist, graph = common.make_root_graph(name+" "+str(i), x_data, axis1_label, y_data, axis2_label)
         graph.SetMarkerStyle(7)
         if i == da_row:
             canvas = common.make_root_canvas(name)
@@ -79,13 +83,14 @@ def plot_one_da(row_data, da_key, axis1, axis2, max_n_points, variables):
     return canvas
   
 def main():
-    base_fname = "output/baseline/get_da.tmp"
-    for file_name in glob.glob("output/*/get_da.tmp"):
+    base_dir = "output/"
+    #base_fname = base_dir+"/baseline/get_da.tmp"
+    for file_name in glob.glob(base_dir+"*/get_da.tmp"):
         data = load_data(file_name)
-        if file_name != base_fname:
-            data += load_data("output/baseline/get_da.tmp")
+        #if file_name != base_fname:
+        #    data += load_data(base_fname)
         plot_dir = os.path.split(file_name)[0]
-        plot_da(data, 100, plot_dir)
+        plot_da(data, 500, plot_dir)
 
 
 if __name__ == "__main__":

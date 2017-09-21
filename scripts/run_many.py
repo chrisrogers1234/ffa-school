@@ -6,7 +6,7 @@ import glob
 PROC_QUEUE = []
 PROC_RUNNING = []
 UNIQUE_ID = 0
-N_PROCS = 3
+N_PROCS = 5
 TARGET_SCRIPT = "run_sim.py"
 TIME_0 = time.time()
 
@@ -14,10 +14,12 @@ def config_list():
     #return sorted(glob.glob(*.py"))
     prefix = "scripts/config/config_"
     config_list = [
+        prefix+"energy_scan.py",
+        prefix+"field_index.py",
+        prefix+"tan_delta.py",
+        prefix+"df_ratio.py",
         prefix+"end_length.py",
         prefix+"max_y_power.py",
-        prefix+"tan_delta.py",
-        #prefix+"da_scan.py",
     ]
     return config_list
 
@@ -88,7 +90,9 @@ def main():
     print len(PROC_QUEUE), "jobs"
     while len(PROC_QUEUE) > 0 or len(PROC_RUNNING) > 0:
         poll_process_queue()
-        time.sleep(10)
+        if len(PROC_QUEUE) == 0 and len(PROC_RUNNING) == 0:
+            break
+        time.sleep(60)
 
 if __name__ == "__main__":
     main()

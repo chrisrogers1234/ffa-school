@@ -47,7 +47,7 @@ def plot_iteration(sub_index, i, iteration, energy):
     for format in "eps", "root", "png":
         canvas.Print(name+"."+format)
 
-def find_closed_orbit(sub_index, subs, seed):
+def find_closed_orbit(sub_index, subs, seed, max_iterations):
     """
     Find the closed orbit; algorithm is to track turn by turn; fit an ellipse to
     the tracking; find the centre of the ellipse; repeat until no improvement or
@@ -98,7 +98,7 @@ def find_closed_orbit(sub_index, subs, seed):
         #if iteration.centre != None: #i == 0 and 
         if i == 0:
             plot_iteration(sub_index, i, iteration, energy)
-        if i >= 10:
+        if i >= max_iterations:
             break
         x_mean = numpy.mean([point[0] for point in iteration.points])
         x_std = numpy.std([point[0] for point in iteration.points])
@@ -107,29 +107,65 @@ def find_closed_orbit(sub_index, subs, seed):
             break
         x_std_old = x_std
     os.chdir(out_dir)
-    if i > -1:
+    if i > 0:
         plot_iteration(sub_index, i, iteration, energy)
     return tracking.last[0]
+
+def get_seed(config, results, subs):
+    if len(results) == 0:
+        config_seed = config.find_closed_orbits["seed"]
+        print "Using config seed", config_seed
+        return config_seed
+    axis_candidates = utilities.get_substitutions_axis(results)
+    if len(axis_candidates) == 0:
+        co_hit = results[0]["hits"][0]
+        seed = [co_hit["x"], co_hit["px"]]
+        print "Using last co as see", seed
+        return seed
+    print "Doing interpolation for seed for variables", axis_candidates.keys()
+    # [dx, dpx]
+    delta_keys_new = {}
+    delta_var_new = []
+    seed_var = {"x":results[-1]["hits"][0]["x"], "px":results[-1]["hits"][0]["px"]}
+    print "  base", seed_var
+    for key in axis_candidates.keys():
+        key2 = subs[key]
+        key1 = axis_candidates[key][-1]
+        key0 = axis_candidates[key][-2]
+        print "    key", key, "values", key0, key1, key2
+        for var in seed_var.keys():
+            var1 = results[-1]["hits"][0][var]
+            var0 = results[-2]["hits"][0][var]
+            delta = (var1-var0)/(key1-key0)*(key2-key1)
+            print "      var", var, "values", var1, var0, "delta", delta
+            seed_var[var] += delta
+    print "  seed", seed_var
+    seed = [seed_var["x"], seed_var["px"]]
+    return seed
 
 def main(config):
     global CONFIG, OUT_DIR, RUN_DIR
     CONFIG = config
     OUT_DIR = CONFIG.run_control["output_dir"]
     RUN_DIR = os.path.join(OUT_DIR, "tmp/find_closed_orbits/")
-    next_seed = config.find_closed_orbits["seed"]
+    max_iterations = config.find_closed_orbits["max_iterations"] 
     fout_name = os.path.join(OUT_DIR, config.find_closed_orbits["output_file"])
     fout = open(fout_name+".tmp", 'w')
     subs_list = config.substitution_list
+    results = []
     for i, sub in enumerate(subs_list):
         is_batch = i >= config.find_closed_orbits["root_batch"] 
         for item, key in config.find_closed_orbits["subs_overrides"].iteritems():
             sub[item] = key
         ROOT.gROOT.SetBatch(is_batch)
-        hit_list = find_closed_orbit(i, sub, next_seed)
-        next_seed = [hit_list[0]["x"], hit_list[0]["px"]]
+        next_seed = get_seed(config, results, sub)
+        hit_list = find_closed_orbit(i, sub, next_seed, max_iterations)
         output = {"substitutions":sub, "hits":[hit.dict_from_hit() for hit in hit_list]}
+        results.append(output)
         print >> fout, json.dumps(output)
         fout.flush()
+        if config.find_closed_orbits["do_plot_orbit"] and i == 0:
+            plot_orbit.main(config.run_control["output_dir"], "tmp/find_closed_orbits/", "SectorFFAGMagnet-trackOrbit.dat")
     fout.close()
     time.sleep(1)
     os.rename(fout_name+".tmp", fout_name+".out")
