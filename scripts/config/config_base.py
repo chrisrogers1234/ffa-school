@@ -68,11 +68,11 @@ class Config(object):
     substitution_list = [get_baseline_substitution()]
     
     run_control = {
-        "find_closed_orbits":False,
-        "find_tune":False,
+        "find_closed_orbits":True,
+        "find_tune":True,
         "find_da":False,
         "track_beam":True,
-        "clean_output_dir":False,
+        "clean_output_dir":True,
         "output_dir":os.path.join(os.getcwd(), "output/baseline"),
     }
 
