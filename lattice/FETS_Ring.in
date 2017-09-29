@@ -4,6 +4,7 @@ Option, ECHO=TRUE;
 //////////////////////////////////////////////////////////////////////////////
 Title,string="Small ring using OPAL code";
 Option, ASCIIDUMP=TRUE;
+Option, ENABLEHDF5=FALSE;
 OPTION, PSDUMPFREQ=100000;
 Option, VERSION=10900;
 Option, SPTDUMPFREQ=1;
@@ -35,8 +36,10 @@ Probe16: PROBE, xstart=(R0-2000)*cos(15*PROBE_PHI), xend=(R0+5000)*cos(15*PROBE_
 
 ringdef: RINGDEFINITION, HARMONIC_NUMBER=1, LAT_RINIT=R0, LAT_PHIINIT=0,
          LAT_THETAINIT=0.0, BEAM_PHIINIT=0.0, BEAM_PRINIT=CO_ANGLE,
-         BEAM_RINIT=R0+CO_OFFSET, SYMMETRY=N_CELLS, RFFREQ=1, IS_CLOSED=true;
+         BEAM_RINIT=R0+CO_OFFSET, SYMMETRY=N_CELLS, RFFREQ=1, IS_CLOSED=true,
+         MIN_R=2.0, MAX_R=3.5;
 
+REAL E0 = __energy__/1000; // GeV
 REAL FFAG_B_MEAN = __b_mean__;
 REAL FFAG_DF_RATIO=__df_ratio__;
 REAL FFAG_F_LENGTH=__f_length__;
@@ -81,7 +84,6 @@ REAL DXN_DRIFT = cos(D_PHI_DRIFT);
 REAL DYN_DRIFT = sin(D_PHI_DRIFT);
 
 REAL M_P = 0.93827208; // GeV/c^2
-REAL E0 = __energy__/1000; // GeV
 REAL P0 = ((E0+M_P)^2-M_P^2)^0.5; // GeV/c
 
 value, {P0, E0, M_P};
@@ -115,11 +117,11 @@ l1: Line = (ringdef, probe1, probe2, probe3, probe4, probe5, probe6, probe7, pro
 
 Dist1: DISTRIBUTION, TYPE=fromfile, FNAME="__beamfile__", INPUTMOUNITS=NONE;
 
-Fs1:FIELDSOLVER, FSTYPE=None, MX=32, MY=32, MT=32,
-		 PARFFTX=true, PARFFTY=true, PARFFTT=false,
+Fs1:FIELDSOLVER, FSTYPE=__solver__, MX=__mx__, MY=__my__, MT=__mt__,
+		 PARFFTX=true, PARFFTY=false, PARFFTT=false,
 		 BCFFTX=open, BCFFTY=open, BCFFTT=open,BBOXINCR=2;
 
-beam1: BEAM, PARTICLE=PROTON, pc=P0, NPART=1, BCURRENT=1.0E-19, CHARGE=1.0, BFREQ=BFREQ;
+beam1: BEAM, PARTICLE=PROTON, pc=P0, NPART=__n_events__, BCURRENT=__current__, CHARGE=1.0, BFREQ=BFREQ;
 
 TRACK, LINE=l1, BEAM=beam1, MAXSTEPS=MAX_STEPS, STEPSPERTURN=STEPS_PER_TURN;
 RUN, METHOD="CYCLOTRON-T", BEAM=beam1, FIELDSOLVER=Fs1, DISTRIBUTION=Dist1;

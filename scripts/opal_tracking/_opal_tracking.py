@@ -29,11 +29,33 @@ from xboa.hit import Hit
 
 from xboa.tracking import TrackingBase 
 
+class StoreDataInMemory(object):
+    def __init__(self, config):
+        self.hit_dict_of_lists = {}
+
+    def process_hit(self, event, hit):
+        if not event in self.hit_dict_of_lists:
+            self.hit_dict_of_lists[event] = []
+        self.hit_dict_of_lists[event].append(hit)
+
+    def finalise(self):
+        # convert from a dict of list of hits to a list of list of hits
+        # one list per event
+        # each list contains one hit per station
+        events = sorted(self.hit_dict_of_lists.keys())
+        hit_list_of_lists = [self.hit_dict_of_lists[ev] for ev in events]
+        # sort by time within each event
+        for i, hit_list in enumerate(hit_list_of_lists):
+            hit_list_of_lists[i] = sorted(hit_list, key = lambda hit: hit['t'])        
+        self.last = hit_list_of_lists
+        self.hit_dict_of_lists = {}
+        return hit_list_of_lists
+
 class OpalTracking(TrackingBase):
     """
     Provides an interface to OPAL tracking routines for use by xboa.algorithms
     """
-    def __init__(self, lattice_filename, beam_filename, reference_hit, output_filename, opal_path, log_filename, save_dir = None):
+    def __init__(self, lattice_filename, beam_filename, reference_hit, output_filename, opal_path, log_filename, save_dir = None, n_cores = 1, mpi = None):
         """
         Initialise OpalTracking routines
         - lattice_filename is the Opal lattice file that OpalTracking will use
@@ -64,6 +86,8 @@ class OpalTracking(TrackingBase):
         self.do_tracking = True
         self.log_filename = log_filename
         self.save_dir = save_dir
+        self.n_cores = n_cores
+        self.mpi = mpi
 
     def save(self):
         """
@@ -91,7 +115,7 @@ class OpalTracking(TrackingBase):
         """
         return self.track_many([hit])[0]
         
-    def track_many(self, list_of_hits):
+    def track_many(self, list_of_hits, pass_through_analysis = StoreDataInMemory(None)):
         """
         Track many hits through Opal
 
@@ -101,9 +125,12 @@ class OpalTracking(TrackingBase):
         """
         if self.do_tracking:
             self._tracking(list_of_hits)
-        hit_list_of_lists = self._read_probes()
-        self.save()
-        return hit_list_of_lists
+        if pass_through_analysis == None:
+            return None
+        else:
+            hit_list_of_lists = self._read_probes(pass_through_analysis)
+            self.save()
+            return hit_list_of_lists
 
     def _tracking(self, list_of_hits):
         if self.log_filename != None:
@@ -118,29 +145,36 @@ class OpalTracking(TrackingBase):
         p_mass = common.pdg_pid_to_mass[2212]
         fout = open(self.beam_filename, "w")
         print >> fout, len(list_of_hits)
-        for hit in list_of_hits:
-            print 'tracking hit ...',
-            for key in 'x', 'y', 'z', 'px', 'py', 'pz':
-                print hit[key],
-            print
-            print '         ref ...',
-            for key in 'x', 'y', 'z', 'px', 'py', 'pz':
-                print self.ref[key],
-            print
+        for i, hit in enumerate(list_of_hits):
+            if i < 1 or i == len(list_of_hits)-1:
+                print 'tracking hit ...',
+                for key in 'x', 'y', 'z', 'px', 'py', 'pz':
+                    print key+":", hit[key],
+                print
+                print '         ref ...',
+                for key in 'x', 'y', 'z', 'px', 'py', 'pz':
+                    print self.ref[key],
+                print
+            if i == 1 and len(list_of_hits) > 2:
+                print "<", len(list_of_hits)-2, " more hits>"
             x = (hit["x"]-self.ref["x"])/m
             y = (hit["y"]-self.ref["y"])/m
             z = (hit["z"]-self.ref["z"])/m
             px = (hit["px"]-self.ref["px"])/p_mass
-            py = (hit["pz"]-self.ref["pz"])/p_mass
-            pz = (hit["py"]-self.ref["py"])/p_mass
+            py = (hit["py"]-self.ref["py"])/p_mass
+            pz = (hit["pz"]-self.ref["pz"])/p_mass
             print >> fout, x, px, z, pz, y, py
         fout.close()
         self.cleanup()
-        proc = subprocess.Popen([self.opal_path, self.lattice_filename],
+        command = [self.opal_path, self.lattice_filename]
+        if self.mpi != None:
+            command = [self.mpi, "-n", str(self.n_cores)]+command
+        proc = subprocess.Popen(command,
                                 stdout=log_file,
                                 stderr=subprocess.STDOUT)
         proc.wait()
-        if proc.returncode != 0:
+        # returncode 1 -> particle fell out of the accelerator
+        if proc.returncode != 0 and proc.returncode != 1:
             raise RuntimeError("OPAL quit with non-zero error code "+\
                                str(proc.returncode)+". Review the log file: "+\
                                str(fname))
@@ -153,8 +187,7 @@ class OpalTracking(TrackingBase):
             dict_of_hit_dicts[station] = hit_dict # overwrites if a duplicate
         return dict_of_hit_dicts.values() # list of hit dicts
 
-    def _read_probes(self):
-        hit_dict_of_lists = {} # maps event number to a list of hit_dicts
+    def _read_probes(self, pass_through_analysis):
         # loop over files in the glob, read events and sort by event number
         file_list = glob.glob(self.output_name)
         for i, file_name in enumerate(file_list):
@@ -183,18 +216,8 @@ class OpalTracking(TrackingBase):
                 hit_dict["z"] = - x*math.sin(phi) + y*math.cos(phi)
                 hit_dict["px"] = + px*math.cos(phi) + py*math.sin(phi)
                 hit_dict["pz"] = - px*math.sin(phi) + py*math.cos(phi)
-                if not event in hit_dict_of_lists:
-                    hit_dict_of_lists[event] = []
-                hit_dict_of_lists[event].append(Hit.new_from_dict(hit_dict, "energy"))
-        # convert from a dict of list of hits to a list of list of hits
-        # one list per event
-        # each list contains one hit per station
-        events = sorted(hit_dict_of_lists.keys())
-        hit_list_of_lists = [hit_dict_of_lists[ev] for ev in events]
-        # sort by time within each event
-        for i, hit_list in enumerate(hit_list_of_lists):
-            hit_list_of_lists[i] = sorted(hit_list, key = lambda hit: hit['t'])        
-        self.last = hit_list_of_lists
-        return hit_list_of_lists
-
-
+                hit = Hit.new_from_dict(hit_dict, "energy")
+                pass_through_analysis.process_hit(event, hit)
+        self.last = pass_through_analysis.finalise()
+        return self.last
+    

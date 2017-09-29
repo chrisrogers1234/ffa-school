@@ -29,7 +29,7 @@ def reference(energy):
     Generate a reference particle
     """
     hit_dict = {}
-    hit_dict["pid"] = CONFIG.find_closed_orbits["pdg_pid"]
+    hit_dict["pid"] = CONFIG.tracking["pdg_pid"]
     hit_dict["mass"] = common.pdg_pid_to_mass[abs(hit_dict["pid"])]
     hit_dict["charge"] = 1
     hit_dict["x"] = 0.

@@ -243,10 +243,7 @@ def plot_elements_xy(log_file, canvas):
     canvas.Update()
     return graph
 
-def main(output_dir, run_dir, run_file):
-    output_dir += "/"
-    opal_run_dir = output_dir+run_dir
-    step_list = parse_track_file(opal_run_dir+run_file)
+def plot_cylindrical(output_dir, opal_run_dir, step_list):
     field_plot = plot_dump_fields.PlotDumpFields(opal_run_dir+"FieldMapRPHI_Offset.dat", True)
     field_plot.load_dump_fields()
     canvas_bz_offset = field_plot.plot_dump_fields("phi", "r", "bz")
@@ -277,6 +274,7 @@ def main(output_dir, run_dir, run_file):
     for format in "png", "root", "eps":
         canvas.Print(output_dir+"closed_orbit_elevation."+format)
 
+def plot_zoom(output_dir, opal_run_dir, step_list):
     field_plot = plot_dump_fields.PlotDumpFields(opal_run_dir+"FieldMapXY-zoom.dat")
     field_plot.load_dump_fields()
 
@@ -287,6 +285,7 @@ def main(output_dir, run_dir, run_file):
     for format in "png", "root", "eps":
         canvas.Print(output_dir+"closed_orbit_plan-zoom."+format)
 
+def plot_cartesian(output_dir, opal_run_dir, step_list):
     field_plot = plot_dump_fields.PlotDumpFields(opal_run_dir+"FieldMapXY.dat")
     field_plot.load_dump_fields()
 
@@ -325,11 +324,19 @@ def main(output_dir, run_dir, run_file):
     for format in "png", "root", "eps":
         canvas.Print(output_dir+"closed_orbit_cartesian_bphi."+format)
 
+def main(output_dir, run_dir, run_file):
+    output_dir += "/"
+    opal_run_dir = output_dir+run_dir
+    step_list = parse_track_file(opal_run_dir+run_file)
+    #plot_cylindrical(output_dir, opal_run_dir, step_list)
+    #plot_zoom(output_dir, opal_run_dir, step_list)
+    plot_cartesian(output_dir, opal_run_dir, step_list)
+
     step_statistics(step_list)
 
 if __name__ == "__main__":
     output_dir = "output/baseline/"
-    run_dir = "tmp/find_closed_orbits/"
+    run_dir = "tmp/track_beam/"
     run_file = "SectorFFAGMagnet-trackOrbit.dat"
     main(output_dir, run_dir, run_file)
     raw_input()
