@@ -18,6 +18,7 @@
 \namespace _opal_tracking
 """
 
+import time
 import tempfile
 import subprocess
 import os
@@ -188,8 +189,10 @@ class OpalTracking(TrackingBase):
             print >> fout, x, px, z, pz, y, py
         fout.close()
         self.cleanup()
+        old_time = time.time()
         proc = self.open_subprocess()
         proc.wait()
+        print "Ran for", time.time() - old_time, "s"
         # returncode 1 -> particle fell out of the accelerator
         if proc.returncode != 0 and proc.returncode != 1:
             raise RuntimeError("OPAL quit with non-zero error code "+\
