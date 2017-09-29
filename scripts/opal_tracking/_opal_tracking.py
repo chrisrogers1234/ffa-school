@@ -85,6 +85,8 @@ class OpalTracking(TrackingBase):
         self.allow_duplicate_station = False
         self.do_tracking = True
         self.log_filename = log_filename
+        if self.log_filename == None:
+            self.log_filename = tempfile.mkstemp()[1]
         self.save_dir = save_dir
         self.n_cores = n_cores
         self.mpi = mpi
@@ -132,14 +134,34 @@ class OpalTracking(TrackingBase):
             self.save()
             return hit_list_of_lists
 
-    def _tracking(self, list_of_hits):
-        if self.log_filename != None:
-            log_file = open(self.log_filename, "w")
-            fname = self.log_filename
+    def open_subprocess(self):
+        command = [self.opal_path, self.lattice_filename]
+        will_do_bsub = False
+        if self.mpi != None:
+            try:
+                subprocess.check_output(["bsub", "-V"])
+                will_do_bsub = True
+                bsub_command = ["bsub",
+                                "-n", str(self.n_cores),
+                                "-q", 'scarf-ibis',
+                                "-W", "24:00",
+                                "-o", self.log_filename,
+                                "-K", ]
+                command = bsub_command+[self.mpi]+command
+            except OSError:
+                command = [self.mpi, "-n", str(self.n_cores)]+command
+        if will_do_bsub:
+            log = open("scarf.log", "w")
         else:
-            fname = tempfile.mkstemp()[1]
-            print "Using logfile ", fname
-            log_file = open(fname, 'w')
+            log = open(self.log_filename, "w")
+
+        proc = subprocess.Popen(command,
+                                stdout=log,
+                                stderr=subprocess.STDOUT)
+        return proc
+
+    def _tracking(self, list_of_hits):
+        print "Using logfile ", self.log_filename
         open(self.lattice_filename).close() # check that lattice exists
         m, GeV = common.units["m"], common.units["GeV"]
         p_mass = common.pdg_pid_to_mass[2212]
@@ -166,12 +188,7 @@ class OpalTracking(TrackingBase):
             print >> fout, x, px, z, pz, y, py
         fout.close()
         self.cleanup()
-        command = [self.opal_path, self.lattice_filename]
-        if self.mpi != None:
-            command = [self.mpi, "-n", str(self.n_cores)]+command
-        proc = subprocess.Popen(command,
-                                stdout=log_file,
-                                stderr=subprocess.STDOUT)
+        proc = self.open_subprocess()
         proc.wait()
         # returncode 1 -> particle fell out of the accelerator
         if proc.returncode != 0 and proc.returncode != 1:
