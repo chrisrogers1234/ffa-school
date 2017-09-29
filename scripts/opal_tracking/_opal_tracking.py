@@ -140,7 +140,7 @@ class OpalTracking(TrackingBase):
         will_do_bsub = False
         if self.mpi != None:
             try:
-                subprocess.check_output(["bsub", "-V"])
+                subprocess.check_call(["bsub", "-V"])
                 will_do_bsub = True
                 bsub_command = ["bsub",
                                 "-n", str(self.n_cores),
