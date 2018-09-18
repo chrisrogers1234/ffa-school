@@ -1,3 +1,5 @@
+
+
 import os
 import shutil
 import sys
@@ -8,6 +10,7 @@ import xboa.common
 import find_closed_orbits
 import find_tune
 import find_da
+import find_rf_parameters
 import track_beam
 
 def get_config():
@@ -42,11 +45,12 @@ def main():
         find_closed_orbits.main(config)
     if config.run_control["find_tune"]:
         find_tune.main(config)
+    if config.run_control["find_rf_parameters"]:
+        find_rf_parameters.main(config)
     if config.run_control["find_da"]:
         find_da.main(config)
     if config.run_control["track_beam"]:
         track_beam.main(config)
 
-    
 if __name__ == "__main__":
     main()

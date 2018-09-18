@@ -9,8 +9,8 @@ Config.track_beam["subs_overrides"]["__solver__"] = "NONE"
 Config.tracking["mpi_exe"] = os.path.expandvars("${OPAL_ROOT_DIR}/external/install/bin/mpirun")
 
 Config.run_control = {
-        "find_closed_orbits":False,
-        "find_tune":False,
+        "find_closed_orbits":True,
+        "find_tune":True,
         "find_da":False,
         "track_beam":True,
         "clean_output_dir":False,

@@ -15,7 +15,7 @@ def load_data(file_name):
         except:
             continue
     return data
-  
+
 def plot_da(data, max_n_points, plot_dir):
     variables = utilities.get_substitutions_axis(data)
     for index, item in enumerate(data):
@@ -30,7 +30,6 @@ def plot_da(data, max_n_points, plot_dir):
                 plot_name = "da_"+str(index)+"_"+da_key+"_"+axis1+"_"+axis2
                 for format in ["eps", "png", "root"]:
                     canvas.Print(plot_dir+"/"+plot_name+"."+format)
-        
 
 def get_da_row(hit_data, max_n_points):
     hit_lengths = [len(hit_list[1]) for hit_list in hit_data]
@@ -81,7 +80,7 @@ def plot_one_da(row_data, da_key, axis1, axis2, max_n_points, variables):
         graph.Draw("SAMEP")
     canvas.Update()
     return canvas
-  
+
 def main():
     base_dir = "output/"
     #base_fname = base_dir+"/baseline/get_da.tmp"
@@ -90,8 +89,7 @@ def main():
         #if file_name != base_fname:
         #    data += load_data(base_fname)
         plot_dir = os.path.split(file_name)[0]
-        plot_da(data, 500, plot_dir)
-
+        plot_da(data, 100, plot_dir)
 
 if __name__ == "__main__":
     main()

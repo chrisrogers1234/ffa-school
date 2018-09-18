@@ -100,10 +100,6 @@ class TrackBeam(object):
         for key, value in self.config.track_beam["subs_overrides"].iteritems():
             subs[key] = value
         xboa.common.substitute(input_file, lattice_file, subs)
-        print "Running tracking with\n   ",
-        for key, value in subs.iteritems():
-            print utilities.sub_to_name(key)+":", value,
-        print
         log_name = self.run_dir+"/log"
         ref_hit = self.reference()
         probe_files = self.config.track_beam["probe_files"]
@@ -113,9 +109,14 @@ class TrackBeam(object):
         phase_space_plots = PhaseSpacePlots(self.config)
         tunes_analysis.set_match(self.centre[0:4], self.ellipse[0:4, 0:4])
         if self.config.track_beam["do_track"]:
+            print "Running tracking with\n   ",
+            for key, value in subs.iteritems():
+                print utilities.sub_to_name(key)+":", value,
+            print
             self.tracking.track_many(self.hits_in, None)
+        print os.getcwd(), probe_files
         self.tracking._read_probes(tunes_analysis)
-        self.tracking._read_probes(phase_space_plots)
+        #self.tracking._read_probes(phase_space_plots)
 
 
     def reference(self):

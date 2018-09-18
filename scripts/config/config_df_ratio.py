@@ -7,7 +7,7 @@ def get_substitution_list():
     substitution_list = []
     for index in range(11):
         sub = config_base.get_baseline_substitution()
-        sub["__df_ratio__"] = -1*(index*0.01+0.1)
+        sub["__df_ratio__"] = -(0.3+0.02*index)
         substitution_list.append(sub)
     print json.dumps(substitution_list, indent=2)
     return substitution_list

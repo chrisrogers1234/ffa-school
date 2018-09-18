@@ -16,4 +16,4 @@ class Config(config_base.Config):
     pass
     
 Config.substitution_list = get_substitution_list()
-Config.run_control["output_dir"] = os.path.join(os.getcwd(), "output/max_y_power")
+Config.run_control["output_dir"] = os.path.join(os.getcwd(), "output/baseline/max_y_power")

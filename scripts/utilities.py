@@ -39,6 +39,12 @@ def get_substitutions_axis(data):
                     axis_candidates[key] = []
                 except TypeError:
                     continue
+    if axis_candidates == {}:
+        print "All of", len(data), "items look the same - nothing to plot"
+        print "First:"
+        print " ", data[0]['substitutions']
+        print "Last:"
+        print " ", data[-1]['substitutions']
     for item in data:
         for key in axis_candidates:
             axis_candidates[key].append(item['substitutions'][key])

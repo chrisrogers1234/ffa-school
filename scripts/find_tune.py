@@ -66,6 +66,9 @@ class Tune(object):
         for i, closed_orbit in enumerate(self.closed_orbits_cached):
             if self.row != None and i not in self.row:
                 continue
+            if len(closed_orbit["hits"]) == 0:
+                print "Error - no closed orbit"
+                continue
             index += 1
             if index >= self.config.find_tune["root_batch"]:
                 ROOT.gROOT.SetBatch(True)
@@ -95,7 +98,10 @@ class Tune(object):
                                         self.opal,
                                         self.tmp_dir+self.log_file)
                 finder = DPhiTuneFinder()
-                finder.run_tracking(axis1, axis2, delta1, delta2, hit, tracking)
+                try:
+                    finder.run_tracking(axis1, axis2, delta1, delta2, hit, tracking)
+                except RuntimeError:
+                    sys.excepthook(*sys.exc_info())
                 for track_index, track in enumerate(tracking.last):
                     print 'Track', track_index, 'of', len(tracking.last), \
                           'with', len(track), 'hits'
@@ -111,9 +117,10 @@ class Tune(object):
                     tune = 0.
                 print '  Found', len(finder.dphi), 'dphi elements'
                 tune_info[axis1+"_tune"] = tune
-                tune_info[axis1+"_tune_error"] = finder.tune_error
+                tune_info[axis1+"_tune_rms"] = finder.tune_error
                 tune_info[axis1+"_signal"] = zip(finder.u, finder.up)
                 tune_info[axis1+"_dphi"] = finder.dphi
+                tune_info[axis1+"_n_cells"] = len(finder.dphi)
                 canvas, hist, graph = finder.plot_phase_space()
                 name = os.path.join(self.output_dir, "tune_"+str(i)+"_"+axis1+"_phase-space")
                 for format in "png", "eps", "root":
@@ -122,6 +129,17 @@ class Tune(object):
                 name = os.path.join(self.output_dir, "tune_"+str(i)+"_"+axis1+"_cholesky-space")
                 for format in "png", "eps", "root":
                     canvas.Print(name+"."+format)
+                for i, u in enumerate([]):#finder.u[:-1]):
+                    up = finder.up[i]
+                    dphi = finder.dphi[i]
+                    t = finder.t[i]
+                    u_chol = finder.point_circles[i][0]
+                    up_chol = finder.point_circles[i][1]
+                    phi = math.atan2(up_chol, u_chol)
+                    print str(i).ljust(4),  str(round(t, 4)).rjust(8), "...", \
+                          str(round(u, 4)).rjust(8), str(round(up, 4)).rjust(8), "...", \
+                          str(round(u_chol, 4)).rjust(8), str(round(up_chol, 4)).rjust(8), "...", \
+                          str(round(phi, 4)).rjust(8), str(round(dphi, 4)).rjust(8)
 
             for key in sorted(tune_info.keys()):
                 if "signal" not in key and "dphi" not in key:

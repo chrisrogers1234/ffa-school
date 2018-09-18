@@ -7,10 +7,13 @@ class PhaseSpacePlots(object):
         self.single_turn_plot_list = [-1]+self.config.track_beam["single_turn_plots"]
         self.x_graphs = [ROOT.TGraph() for i in self.single_turn_plot_list]
         self.y_graphs = [ROOT.TGraph() for i in self.single_turn_plot_list]
+        self.z_graphs = [ROOT.TGraph() for i in self.single_turn_plot_list]
         self.x_hist = None
         self.y_hist = None
+        self.z_hist = None
         self.x_canvas = None
         self.y_canvas = None
+        self.z_canvas = None
         co_seed = config.find_closed_orbits["seed"]
         self.turn_index = {}
         self.min_r = self.config.track_beam["min_radius"]
@@ -23,13 +26,15 @@ class PhaseSpacePlots(object):
         if event not in self.turn_index:
               self.turn_index[event] = 0
         turn_index = self.turn_index[event]
-        x, px, y, py = hit['x'], hit['px'], hit['y'], hit['py']
+        x, px, y, py, ct, pz = hit['x'], hit['px'], hit['y'], hit['py'], hit['ct'], hit['pz']
         if turn_index in self.single_turn_plot_list:
             index = self.single_turn_plot_list.index(turn_index)
             self.x_graphs[index].SetPoint(self.x_graphs[index].GetN(), hit['x'], hit['px'])
             self.y_graphs[index].SetPoint(self.y_graphs[index].GetN(), hit['y'], hit['py'])
+            self.z_graphs[index].SetPoint(self.z_graphs[index].GetN(), hit['ct'], hit['pz'])
         self.x_graphs[0].SetPoint(self.x_graphs[0].GetN(), hit['x'], hit['px'])
         self.y_graphs[0].SetPoint(self.y_graphs[0].GetN(), hit['y'], hit['py'])
+        self.z_graphs[0].SetPoint(self.z_graphs[0].GetN(), hit['ct'], hit['pz'])
         self.turn_index[event] += 1
 
     def graph_range(self, axis):
@@ -42,8 +47,10 @@ class PhaseSpacePlots(object):
     def axes(self, axis, graph):
         if axis == "x":
             label = ";x [mm];p_{x} [MeV/c]"
-        else:
+        elif axis == "y":
             label = ";y [mm];p_{y} [MeV/c]"
+        else:
+            label = ";ct [mm];p_{z} [MeV/c]"
         x_min, x_max = self.graph_range(graph.GetXaxis())
         y_min, y_max = self.graph_range(graph.GetYaxis())
         x_hist = ROOT.TH2D("", label,
@@ -84,7 +91,7 @@ class PhaseSpacePlots(object):
         self.y_canvas.Draw()
 
         for index, graph in enumerate(reversed(self.y_graphs)):
-            i = len(self.x_graphs)-index
+            i = len(self.y_graphs)-index
             if graph.GetN() == 0:
                 continue
             self.y_hist = self.axes("y", graph)
@@ -95,3 +102,19 @@ class PhaseSpacePlots(object):
             for format in "png", "eps", "root":
                 name = output_dir+"/y-py_phase-space_"+str(i)+"."+format
                 self.y_canvas.Print(name)
+
+        self.z_canvas = xboa.common.make_root_canvas("z phase space")
+        self.z_canvas.Draw()
+
+        for index, graph in enumerate(reversed(self.z_graphs)):
+            i = len(self.z_graphs)-index
+            if graph.GetN() == 0:
+                continue
+            self.z_hist = self.axes("z", graph)
+            self.z_hist.Draw()
+            self.set_marker(graph)
+            graph.Draw("psame")
+            self.z_canvas.Update()
+            for format in "png", "eps", "root":
+                name = output_dir+"/ct-pz_phase-space_"+str(i)+"."+format
+                self.z_canvas.Print(name)

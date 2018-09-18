@@ -24,6 +24,7 @@ import subprocess
 import os
 import glob
 import math
+import sys
 
 from xboa import common
 from xboa.hit import Hit
@@ -133,6 +134,7 @@ class OpalTracking(TrackingBase):
         else:
             hit_list_of_lists = self._read_probes(pass_through_analysis)
             self.save()
+            print "OUTPUT", hit_list_of_lists[0][0]['kinetic_energy']
             return hit_list_of_lists
 
     def open_subprocess(self):
@@ -169,14 +171,17 @@ class OpalTracking(TrackingBase):
         fout = open(self.beam_filename, "w")
         print >> fout, len(list_of_hits)
         for i, hit in enumerate(list_of_hits):
+            keys = ['x', 'y', 'z', 'px', 'py', 'pz', 'kinetic_energy']
+            print '           ',
+            for key in keys:
+                print key.ljust(8),
             if i < 1 or i == len(list_of_hits)-1:
-                print 'tracking hit ...',
-                for key in 'x', 'y', 'z', 'px', 'py', 'pz':
-                    print key+":", hit[key],
-                print
-                print '         ref ...',
-                for key in 'x', 'y', 'z', 'px', 'py', 'pz':
-                    print self.ref[key],
+                print '\n    hit ...',
+                for key in keys:
+                    print str(round(hit[key], 3)).ljust(8),
+                print '\n    ref ...',
+                for key in 'x', 'y', 'z', 'px', 'py', 'pz', 'kinetic_energy':
+                    print str(round(self.ref[key], 3)).ljust(8),
                 print
             if i == 1 and len(list_of_hits) > 2:
                 print "<", len(list_of_hits)-2, " more hits>"
@@ -197,7 +202,7 @@ class OpalTracking(TrackingBase):
         if proc.returncode != 0 and proc.returncode != 1:
             raise RuntimeError("OPAL quit with non-zero error code "+\
                                str(proc.returncode)+". Review the log file: "+\
-                               str(fname))
+                               os.path.join(os.getcwd(), self.log_filename))
 
     def _remove_duplicate_stations(self, list_of_hit_dicts):
         if self.allow_duplicate_station:
@@ -210,34 +215,45 @@ class OpalTracking(TrackingBase):
     def _read_probes(self, pass_through_analysis):
         # loop over files in the glob, read events and sort by event number
         file_list = glob.glob(self.output_name)
-        for i, file_name in enumerate(file_list):
-            fin = open(file_name)
-            fin.readline()
-            # go through file line by line reading hit data
-            for line in fin.readlines():
-                words = line.split()
-                hit_dict = {}
-                for key in "pid", "mass", "charge":
-                    hit_dict[key] = self.ref[key]
-                for i, key in enumerate(["x", "z", "y"]):
-                    hit_dict[key] = float(words[i+1])
-                for i, key in enumerate(["px", "pz", "py"]):
-                    hit_dict[key] = float(words[i+4])*self.ref["mass"]
-                event = int(words[7])
-                hit_dict["event_number"] = int(words[7])
-                hit_dict["station"] = int(words[8])*len(file_list)+i
-                x = hit_dict["x"]
-                y = hit_dict["z"]
-                px = hit_dict["px"]
-                py = hit_dict["pz"]
-                phi = math.atan2(y, x)
-                hit_dict["t"] = float(words[9])
-                hit_dict["x"] = + x*math.cos(phi) + y*math.sin(phi)
-                hit_dict["z"] = - x*math.sin(phi) + y*math.cos(phi)
-                hit_dict["px"] = + px*math.cos(phi) + py*math.sin(phi)
-                hit_dict["pz"] = - px*math.sin(phi) + py*math.cos(phi)
-                hit = Hit.new_from_dict(hit_dict, "energy")
-                pass_through_analysis.process_hit(event, hit)
+        fin_list = [open(file_name) for file_name in file_list]
+        line = "0"
+        line_number = 0
+        while line != "" and len(fin_list) > 0:
+            for fin in fin_list: 
+                line = fin.readline()
+                if line == "":
+                    break
+                try:
+                    event, hit = self.read_one_line(line, line_number)
+                    pass_through_analysis.process_hit(event, hit)
+                except ValueError:
+                   pass
+                line_number += 1
         self.last = pass_through_analysis.finalise()
         return self.last
-    
+   
+    def read_one_line(self, line, station): 
+        words = line.split()
+        hit_dict = {}
+        for key in "pid", "mass", "charge":
+            hit_dict[key] = self.ref[key]
+        for i, key in enumerate(["x", "z", "y"]):
+            hit_dict[key] = float(words[i+1])
+        for i, key in enumerate(["px", "pz", "py"]):
+            hit_dict[key] = float(words[i+4])*self.ref["mass"]
+        event = int(words[7])
+        hit_dict["event_number"] = int(words[7])
+        hit_dict["station"] = station
+        x = hit_dict["x"]
+        y = hit_dict["z"]
+        px = hit_dict["px"]
+        py = hit_dict["pz"]
+        phi = math.atan2(y, x)
+        hit_dict["t"] = float(words[9])
+        hit_dict["x"] = + x*math.cos(phi) + y*math.sin(phi)
+        hit_dict["z"] = - x*math.sin(phi) + y*math.cos(phi)
+        hit_dict["px"] = + px*math.cos(phi) + py*math.sin(phi)
+        # go through file line by line reading hit data
+        hit_dict["pz"] = - px*math.sin(phi) + py*math.cos(phi)
+        hit = Hit.new_from_dict(hit_dict, "energy")
+        return event, hit

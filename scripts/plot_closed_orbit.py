@@ -34,7 +34,7 @@ def plot_closed_orbit(data, co_axis, plot_dir):
             canvas.Print(plot_dir+"/"+co_axis+"_closed_orbit."+format)
 
 def main():
-    for file_name in glob.glob("output/*/find_closed*"):
+    for file_name in glob.glob("output/end_length/find_closed*"):
         plot_dir = os.path.split(file_name)[0]
         print file_name
         data = load_file(file_name)

@@ -14,12 +14,9 @@ def config_list():
     #return sorted(glob.glob(*.py"))
     prefix = "scripts/config/config_"
     config_list = [
-        prefix+"energy_scan.py",
-        prefix+"field_index.py",
-        prefix+"tan_delta.py",
-        prefix+"df_ratio.py",
-        prefix+"end_length.py",
-        prefix+"max_y_power.py",
+        prefix+"base_1e11.py",
+        prefix+"base_1e12.py",
+        prefix+"base_1e13.py",
     ]
     return config_list
 

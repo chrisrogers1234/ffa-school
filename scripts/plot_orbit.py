@@ -2,6 +2,7 @@
 Plot a single closed orbit (once tracking has finished)
 """
 
+import sys
 import copy
 import math
 import numpy
@@ -114,7 +115,7 @@ def plot_r_phi_projection(step_list, canvas = None):
     points = sorted(points)
     for i in range(len(step_list["r"])):
         graph.SetPoint(i, points[i][0], points[i][1])
-    graph.Draw("l")
+    graph.Draw("p")
     canvas.Update()
     RootObjects.canvases.append(canvas)
     RootObjects.graphs.append(graph)
@@ -244,8 +245,12 @@ def plot_elements_xy(log_file, canvas):
     return graph
 
 def plot_cylindrical(output_dir, opal_run_dir, step_list):
-    field_plot = plot_dump_fields.PlotDumpFields(opal_run_dir+"FieldMapRPHI_Offset.dat", True)
+    field_plot = plot_dump_fields.PlotDumpFields(opal_run_dir+"FieldMapRPHI.dat", True)
     field_plot.load_dump_fields()
+    canvas_1d = field_plot.plot_1d({"r":4.}, "phi", "bz")
+    for format in "png", "root", "eps":
+        canvas_1d.Print(output_dir+"bz_1d."+format)
+    
     canvas_bz_offset = field_plot.plot_dump_fields("phi", "r", "bz")
     plot_r_phi_projection(step_list, canvas_bz_offset)
     for format in "png", "root", "eps":
@@ -328,15 +333,24 @@ def main(output_dir, run_dir, run_file):
     output_dir += "/"
     opal_run_dir = output_dir+run_dir
     step_list = parse_track_file(opal_run_dir+run_file)
-    #plot_cylindrical(output_dir, opal_run_dir, step_list)
-    #plot_zoom(output_dir, opal_run_dir, step_list)
-    plot_cartesian(output_dir, opal_run_dir, step_list)
+    try:
+        plot_cylindrical(output_dir, opal_run_dir, step_list)
+    except Exception:
+        sys.excepthook(*sys.exc_info())
+    try:
+        plot_zoom(output_dir, opal_run_dir, step_list)
+    except Exception:
+        sys.excepthook(*sys.exc_info())
+    try:
+        plot_cartesian(output_dir, opal_run_dir, step_list)
+    except Exception:
+        sys.excepthook(*sys.exc_info())
 
     step_statistics(step_list)
 
 if __name__ == "__main__":
-    output_dir = "output/baseline/"
-    run_dir = "tmp/track_beam/"
+    output_dir = "reference/reference/"
+    run_dir = "tmp/find_closed_orbits/"
     run_file = "SectorFFAGMagnet-trackOrbit.dat"
     main(output_dir, run_dir, run_file)
     raw_input()
