@@ -10,44 +10,51 @@ Option, VERSION=10900;
 Option, SPTDUMPFREQ=1;
 Option, STATDUMPFREQ=100000;
 
-REAL R0 = 3.;
-REAL N_CELLS=12; // NOTE!! If you change the number of cells, you must *by hand* change the probe settings
+REAL R0 = 4.;
+REAL N_CELLS=15; // NOTE!! If you change the number of cells, you must *by hand* change the probe settings
 REAL CO_OFFSET = -1*R0;
 REAL CO_ANGLE = 0.0;
 
 REAL PROBE_PHI=2.*PI/N_CELLS;
-Probe1: PROBE, xstart=(R0-2000)*cos(0*PROBE_PHI), xend=(R0+5000)*cos(0*PROBE_PHI), ystart=(R0-2000)*sin(0*PROBE_PHI), yend=(R0+5000)*sin(0*PROBE_PHI);
-Probe2: PROBE, xstart=(R0-2000)*cos(1*PROBE_PHI), xend=(R0+5000)*cos(1*PROBE_PHI), ystart=(R0-2000)*sin(1*PROBE_PHI), yend=(R0+5000)*sin(1*PROBE_PHI);
-Probe3: PROBE, xstart=(R0-2000)*cos(2*PROBE_PHI), xend=(R0+5000)*cos(2*PROBE_PHI), ystart=(R0-2000)*sin(2*PROBE_PHI), yend=(R0+5000)*sin(2*PROBE_PHI);
-Probe4: PROBE, xstart=(R0-2000)*cos(3*PROBE_PHI), xend=(R0+5000)*cos(3*PROBE_PHI), ystart=(R0-2000)*sin(3*PROBE_PHI), yend=(R0+5000)*sin(3*PROBE_PHI);
-Probe5: PROBE, xstart=(R0-2000)*cos(4*PROBE_PHI), xend=(R0+5000)*cos(4*PROBE_PHI), ystart=(R0-2000)*sin(4*PROBE_PHI), yend=(R0+5000)*sin(4*PROBE_PHI);
-Probe6: PROBE, xstart=(R0-2000)*cos(5*PROBE_PHI), xend=(R0+5000)*cos(5*PROBE_PHI), ystart=(R0-2000)*sin(5*PROBE_PHI), yend=(R0+5000)*sin(5*PROBE_PHI);
-Probe7: PROBE, xstart=(R0-2000)*cos(6*PROBE_PHI), xend=(R0+5000)*cos(6*PROBE_PHI), ystart=(R0-2000)*sin(6*PROBE_PHI), yend=(R0+5000)*sin(6*PROBE_PHI);
-Probe8: PROBE, xstart=(R0-2000)*cos(7*PROBE_PHI), xend=(R0+5000)*cos(7*PROBE_PHI), ystart=(R0-2000)*sin(7*PROBE_PHI), yend=(R0+5000)*sin(7*PROBE_PHI);
-Probe9: PROBE, xstart=(R0-2000)*cos(8*PROBE_PHI), xend=(R0+5000)*cos(8*PROBE_PHI), ystart=(R0-2000)*sin(8*PROBE_PHI), yend=(R0+5000)*sin(8*PROBE_PHI);
-Probe10: PROBE, xstart=(R0-2000)*cos(9*PROBE_PHI), xend=(R0+5000)*cos(9*PROBE_PHI), ystart=(R0-2000)*sin(9*PROBE_PHI), yend=(R0+5000)*sin(9*PROBE_PHI);
+Probe1: PROBE,  xstart=(R0-2000)*cos(0*PROBE_PHI),  xend=(R0+5000)*cos(0*PROBE_PHI),  ystart=(R0-2000)*sin(0*PROBE_PHI),  yend=(R0+5000)*sin(0*PROBE_PHI);
+Probe2: PROBE,  xstart=(R0-2000)*cos(1*PROBE_PHI),  xend=(R0+5000)*cos(1*PROBE_PHI),  ystart=(R0-2000)*sin(1*PROBE_PHI),  yend=(R0+5000)*sin(1*PROBE_PHI);
+Probe3: PROBE,  xstart=(R0-2000)*cos(2*PROBE_PHI),  xend=(R0+5000)*cos(2*PROBE_PHI),  ystart=(R0-2000)*sin(2*PROBE_PHI),  yend=(R0+5000)*sin(2*PROBE_PHI);
+Probe4: PROBE,  xstart=(R0-2000)*cos(3*PROBE_PHI),  xend=(R0+5000)*cos(3*PROBE_PHI),  ystart=(R0-2000)*sin(3*PROBE_PHI),  yend=(R0+5000)*sin(3*PROBE_PHI);
+Probe5: PROBE,  xstart=(R0-2000)*cos(4*PROBE_PHI),  xend=(R0+5000)*cos(4*PROBE_PHI),  ystart=(R0-2000)*sin(4*PROBE_PHI),  yend=(R0+5000)*sin(4*PROBE_PHI);
+Probe6: PROBE,  xstart=(R0-2000)*cos(5*PROBE_PHI),  xend=(R0+5000)*cos(5*PROBE_PHI),  ystart=(R0-2000)*sin(5*PROBE_PHI),  yend=(R0+5000)*sin(5*PROBE_PHI);
+Probe7: PROBE,  xstart=(R0-2000)*cos(6*PROBE_PHI),  xend=(R0+5000)*cos(6*PROBE_PHI),  ystart=(R0-2000)*sin(6*PROBE_PHI),  yend=(R0+5000)*sin(6*PROBE_PHI);
+Probe8: PROBE,  xstart=(R0-2000)*cos(7*PROBE_PHI),  xend=(R0+5000)*cos(7*PROBE_PHI),  ystart=(R0-2000)*sin(7*PROBE_PHI),  yend=(R0+5000)*sin(7*PROBE_PHI);
+Probe9: PROBE,  xstart=(R0-2000)*cos(8*PROBE_PHI),  xend=(R0+5000)*cos(8*PROBE_PHI),  ystart=(R0-2000)*sin(8*PROBE_PHI),  yend=(R0+5000)*sin(8*PROBE_PHI);
+Probe10: PROBE, xstart=(R0-2000)*cos(9*PROBE_PHI),  xend=(R0+5000)*cos(9*PROBE_PHI),  ystart=(R0-2000)*sin(9*PROBE_PHI),  yend=(R0+5000)*sin(9*PROBE_PHI);
 Probe11: PROBE, xstart=(R0-2000)*cos(10*PROBE_PHI), xend=(R0+5000)*cos(10*PROBE_PHI), ystart=(R0-2000)*sin(10*PROBE_PHI), yend=(R0+5000)*sin(10*PROBE_PHI);
 Probe12: PROBE, xstart=(R0-2000)*cos(11*PROBE_PHI), xend=(R0+5000)*cos(11*PROBE_PHI), ystart=(R0-2000)*sin(11*PROBE_PHI), yend=(R0+5000)*sin(11*PROBE_PHI);
 Probe13: PROBE, xstart=(R0-2000)*cos(12*PROBE_PHI), xend=(R0+5000)*cos(12*PROBE_PHI), ystart=(R0-2000)*sin(12*PROBE_PHI), yend=(R0+5000)*sin(12*PROBE_PHI);
 Probe14: PROBE, xstart=(R0-2000)*cos(13*PROBE_PHI), xend=(R0+5000)*cos(13*PROBE_PHI), ystart=(R0-2000)*sin(13*PROBE_PHI), yend=(R0+5000)*sin(13*PROBE_PHI);
 Probe15: PROBE, xstart=(R0-2000)*cos(14*PROBE_PHI), xend=(R0+5000)*cos(14*PROBE_PHI), ystart=(R0-2000)*sin(14*PROBE_PHI), yend=(R0+5000)*sin(14*PROBE_PHI);
-Probe16: PROBE, xstart=(R0-2000)*cos(15*PROBE_PHI), xend=(R0+5000)*cos(15*PROBE_PHI), ystart=(R0-2000)*sin(15*PROBE_PHI), yend=(R0+5000)*sin(15*PROBE_PHI);
+// Probe16: PROBE, xstart=(R0-2000)*cos(15*PROBE_PHI), xend=(R0+5000)*cos(15*PROBE_PHI), ystart=(R0-2000)*sin(15*PROBE_PHI), yend=(R0+5000)*sin(15*PROBE_PHI);
 
 
 ringdef: RINGDEFINITION, HARMONIC_NUMBER=1, LAT_RINIT=R0, LAT_PHIINIT=0,
          LAT_THETAINIT=0.0, BEAM_PHIINIT=0.0, BEAM_PRINIT=CO_ANGLE,
-         BEAM_RINIT=R0+CO_OFFSET, SYMMETRY=N_CELLS, RFFREQ=1, IS_CLOSED=true,
-         MIN_R=2.0, MAX_R=3.5;
+         BEAM_RINIT=R0+CO_OFFSET, SYMMETRY=1, RFFREQ=1, IS_CLOSED=true,
+         MIN_R=2.0, MAX_R=5.5;
 
-REAL E0 = __energy__/1000; // GeV
-REAL FFAG_B_MEAN = __b_mean__;
-REAL FFAG_DF_RATIO=__df_ratio__;
-REAL FFAG_F_LENGTH=__f_length__;
-REAL FFAG_D_LENGTH=__d_length__;
-REAL FFAG_TAN_DELTA=__tan_delta__;
-REAL FFAG_FIELD_INDEX=__field_index__;
-REAL FFAG_MAX_Y_POWER=__max_y_power__;
-REAL FFAG_END_LENGTH=__end_length__; // end length in multiples of centre length
+REAL E0 = __energy__/1000; // [GeV]
+REAL FFAG_B_MEAN = __b_mean__; // [T]; mean field over the entire cell at R0
+REAL FFAG_DF_RATIO=__df_ratio__; // []; BD/BF
+REAL FFAG_F_LENGTH=__f_length__; // [fraction of cell length]
+REAL FFAG_D_LENGTH=__d_length__; // [fraction of cell length]
+REAL FFAG_TAN_DELTA=__tan_delta__; // []
+REAL FFAG_FIELD_INDEX=__field_index__; // []
+REAL FFAG_MAX_Y_POWER=__max_y_power__; // []
+REAL FFAG_F_END_LENGTH=__f_end_length__; // [] end length in multiples of centre length
+REAL FFAG_D_END_LENGTH=__d_end_length__; // [] end length in multiples of centre length
+REAL FFAG_RF_VOLTAGE=__rf_voltage__; // [kV] total field in the FFAG
+REAL FFAG_RF_PHASE=__rf_phase__; // [rad] RF phase
+REAL FFAG_RF_FREQ_0=__rf_freq_0__; // [MHz]
+REAL FFAG_RF_FREQ_1=__rf_freq_1__; // [MHz/ns^1]
+REAL FFAG_RF_FREQ_2=__rf_freq_2__; // [MHz/ns^2]
+REAL FFAG_RF_FREQ_3=__rf_freq_3__; // [MHz/ns^3]
 
 // Aim is that DF ratio controls relative amount of bend out vs bend in (and associated quad strengths)
 // independent of the magnet length parameters
@@ -56,27 +63,29 @@ REAL FFAG_END_LENGTH=__end_length__; // end length in multiples of centre length
 // * FIELD_INDEX controls the focusing strength of each magnet and width of the magnet
 // * TAN_DELTA controls tan delta
 // * END_LENGTH and MAX_Y_POWER control the degree of non-linearity
-//
-// length
-REAL FFAG_D_CENTRE_LENGTH=2*PI/N_CELLS*FFAG_D_LENGTH;
-REAL FFAG_F_CENTRE_LENGTH=2*PI/N_CELLS*FFAG_F_LENGTH;
-// field magnitude
-REAL FFAG_BF=FFAG_DF_RATIO*0.2/FFAG_F_LENGTH;
-REAL FFAG_BD=1.0*0.2/FFAG_D_LENGTH;
-REAL FFAG_B_SCALE = FFAG_B_MEAN*2*PI/(FFAG_BF*FFAG_F_CENTRE_LENGTH + FFAG_BD*FFAG_D_CENTRE_LENGTH)*8;
+// * DF_RATIO, END_LENGTH and TAN_DELTA also control the vertical tune 
+// * RF_VOLTAGE, RF_PHASE controls the RF voltage and phase
 
+// length
+REAL FFAG_CELL_LENGTH=2*PI/N_CELLS;
+REAL FFAG_F_CENTRE_LENGTH=FFAG_CELL_LENGTH*FFAG_F_LENGTH;
+REAL FFAG_D_CENTRE_LENGTH=FFAG_CELL_LENGTH*FFAG_D_LENGTH;
+// field magnitude
+REAL FFAG_BF=FFAG_B_MEAN/(FFAG_F_LENGTH+FFAG_DF_RATIO*FFAG_D_LENGTH);
+REAL FFAG_BD=FFAG_DF_RATIO*FFAG_BF;
 
 // Magnet has 2 end lengths; then a centre length; then 2 end lengths
 // If STAY_CLEAR=0 then B = B0/2. at the start/end of the magnet
 REAL STAY_CLEAR = 2;
-REAL START_D = FFAG_D_CENTRE_LENGTH*FFAG_END_LENGTH*STAY_CLEAR;
-REAL END_D = FFAG_D_CENTRE_LENGTH*(1+FFAG_END_LENGTH*STAY_CLEAR*2);
-REAL START_F = FFAG_F_CENTRE_LENGTH*FFAG_END_LENGTH*STAY_CLEAR;
-REAL END_F = FFAG_F_CENTRE_LENGTH*(1+FFAG_END_LENGTH*STAY_CLEAR*2);
-REAL D_PHI_DRIFT = (2*PI/N_CELLS-END_F- END_D)/2; //
+REAL START_D = FFAG_D_CENTRE_LENGTH*FFAG_D_END_LENGTH*STAY_CLEAR;
+REAL END_D = FFAG_D_CENTRE_LENGTH*(1+FFAG_D_END_LENGTH*STAY_CLEAR*2);
+REAL START_F = FFAG_F_CENTRE_LENGTH*FFAG_F_END_LENGTH*STAY_CLEAR;
+REAL END_F = FFAG_F_CENTRE_LENGTH*(1+FFAG_F_END_LENGTH*STAY_CLEAR*2);
+REAL D_PHI_DRIFT = (FFAG_CELL_LENGTH-END_F- END_D)/2; //
 // Bounding box extends for 0.5 centre length + 8 end lengths in each direction
 REAL BB = 8;
-REAL FFAG_AZIMUTHAL_EXTENT = FFAG_D_CENTRE_LENGTH*(0.5+FFAG_END_LENGTH*BB);
+REAL FFAG_D_AZIMUTHAL_EXTENT = FFAG_D_CENTRE_LENGTH*(0.5+FFAG_D_END_LENGTH*BB);
+REAL FFAG_F_AZIMUTHAL_EXTENT = FFAG_F_CENTRE_LENGTH*(0.5+FFAG_F_END_LENGTH*BB);
 
 REAL DX_DRIFT = R0*sin(D_PHI_DRIFT);
 REAL DY_DRIFT = R0*(1-cos(D_PHI_DRIFT));
@@ -99,21 +108,42 @@ REAL BFREQ = 1.e3/STEPS_PER_TURN/STEP_SIZE_NS*3.18658692e-05*100.;
 
 value, {BFREQ, STEP_SIZE_NS, STEP_SIZE_MM, MAX_STEPS, STEPS_PER_TURN};
 
-value, {START_D, END_D, FFAG_D_CENTRE_LENGTH, FFAG_B_SCALE*FFAG_BD};
-value, {START_F, END_F, FFAG_F_CENTRE_LENGTH, FFAG_B_SCALE*FFAG_BF};
+value, {START_D, END_D, FFAG_D_CENTRE_LENGTH, FFAG_BD};
+value, {START_F, END_F, FFAG_F_CENTRE_LENGTH, FFAG_BF};
+REAL DF_RATIO = FFAG_BD/FFAG_BF;
+REAL MEAN_B = (FFAG_BD*FFAG_D_CENTRE_LENGTH + FFAG_BF*FFAG_F_CENTRE_LENGTH)/FFAG_CELL_LENGTH;
+value, {DF_RATIO, MEAN_B};
 value, {D_PHI_DRIFT, DX_DRIFT, DY_DRIFT, DXN_DRIFT, DYN_DRIFT};
 
+rf_frequency: POLYNOMIAL_TIME_DEPENDENCE, P0=FFAG_RF_FREQ_0, P1=FFAG_RF_FREQ_1, P2=FFAG_RF_FREQ_2, P3=FFAG_RF_FREQ_3;
+rf_amplitude: POLYNOMIAL_TIME_DEPENDENCE, P0=FFAG_RF_VOLTAGE/10; // V*1e-1 MV/m, 10 mm long cavity => V kV total
+rf_phase: POLYNOMIAL_TIME_DEPENDENCE, P0=FFAG_RF_PHASE;
+cavity_drift: LOCAL_CARTESIAN_OFFSET, end_position_x=-10., end_position_y=0., end_normal_x=1., end_normal_y=0.; // go back to start of cavity
+rf_cavity: VARIABLE_RF_CAVITY, PHASE_MODEL="RF_PHASE", AMPLITUDE_MODEL="RF_AMPLITUDE", FREQUENCY_MODEL="RF_FREQUENCY", L=10., HEIGHT=1000., WIDTH=3000.;
+
 halfDrift: LOCAL_CARTESIAN_OFFSET, end_position_x=DX_DRIFT*1000., end_position_y=DY_DRIFT*1000., end_normal_x=DXN_DRIFT, end_normal_y=DYN_DRIFT;
-magnetD: ScalingFFAGMagnet, B0=FFAG_B_SCALE*FFAG_BD, R0=R0, FIELD_INDEX=FFAG_FIELD_INDEX, TAN_DELTA=FFAG_TAN_DELTA, MAX_Y_POWER=FFAG_MAX_Y_POWER, CENTRE_LENGTH=R0*FFAG_D_CENTRE_LENGTH, END_LENGTH=R0*FFAG_D_CENTRE_LENGTH*FFAG_END_LENGTH, RADIAL_NEG_EXTENT=0.3, RADIAL_POS_EXTENT=0.7, MAGNET_START=R0*START_D, MAGNET_END=R0*END_D, HEIGHT=1., AZIMUTHAL_EXTENT=R0*FFAG_AZIMUTHAL_EXTENT;
-magnetF: ScalingFFAGMagnet, B0=FFAG_B_SCALE*FFAG_BF, R0=R0, FIELD_INDEX=FFAG_FIELD_INDEX, TAN_DELTA=FFAG_TAN_DELTA, MAX_Y_POWER=FFAG_MAX_Y_POWER, CENTRE_LENGTH=R0*FFAG_F_CENTRE_LENGTH, END_LENGTH=R0*FFAG_F_CENTRE_LENGTH*FFAG_END_LENGTH, RADIAL_NEG_EXTENT=0.3, RADIAL_POS_EXTENT=0.7, MAGNET_START=R0*START_F, MAGNET_END=R0*END_F, HEIGHT=1., AZIMUTHAL_EXTENT=R0*FFAG_AZIMUTHAL_EXTENT;
+magnetD: ScalingFFAGMagnet, B0=FFAG_BD, R0=R0, FIELD_INDEX=FFAG_FIELD_INDEX, TAN_DELTA=FFAG_TAN_DELTA, MAX_Y_POWER=FFAG_MAX_Y_POWER, CENTRE_LENGTH=R0*FFAG_D_CENTRE_LENGTH, END_LENGTH=R0*FFAG_D_CENTRE_LENGTH*FFAG_D_END_LENGTH, RADIAL_NEG_EXTENT=2.0, RADIAL_POS_EXTENT=3.0, MAGNET_START=R0*START_D, MAGNET_END=R0*END_D, HEIGHT=1., AZIMUTHAL_EXTENT=R0*FFAG_D_AZIMUTHAL_EXTENT;
+magnetF: ScalingFFAGMagnet, B0=FFAG_BF, R0=R0, FIELD_INDEX=FFAG_FIELD_INDEX, TAN_DELTA=FFAG_TAN_DELTA, MAX_Y_POWER=FFAG_MAX_Y_POWER, CENTRE_LENGTH=R0*FFAG_F_CENTRE_LENGTH, END_LENGTH=R0*FFAG_F_CENTRE_LENGTH*FFAG_F_END_LENGTH, RADIAL_NEG_EXTENT=2.0, RADIAL_POS_EXTENT=3.0, MAGNET_START=R0*START_F, MAGNET_END=R0*END_F, HEIGHT=1., AZIMUTHAL_EXTENT=R0*FFAG_F_AZIMUTHAL_EXTENT;
 
-DUMPFIELDS, X_START=0., X_STEPS=R0*80+1, DX=0.100/4.*2./3., Y_START=0., Y_STEPS=R0*80+1, DY=0.100/4.*2./3., Z_START=0.001, Z_STEPS=1, DZ=0.100, FILE_NAME="FieldMapXY.dat";
-DUMPFIELDS, X_START=2.4, X_STEPS=502, DX=0.003, Y_START=0.6, Y_STEPS=502, DY=0.003, Z_START=0, Z_STEPS=1, DZ=0.100, FILE_NAME="FieldMapXY-zoom.dat";
-DUMPEMFIELDS, COORDINATE_SYSTEM=CYLINDRICAL, R_START=R0*5/6, R_STEPS=1000, DR=1.e-3, PHI_START=0., PHI_STEPS=180, DPHI=0.25, Z_START=0, Z_STEPS=1, DZ=0.100, T_START=0, T_STEPS=1, DT=1., FILE_NAME="FieldMapRPHI.dat";
-DUMPEMFIELDS, COORDINATE_SYSTEM=CYLINDRICAL, R_START=R0*5/6, R_STEPS=1000, DR=1.e-3, PHI_START=0., PHI_STEPS=481, DPHI=1./480*30, Z_START=0.01, Z_STEPS=1, DZ=0.100, T_START=0, T_STEPS=1, DT=1., FILE_NAME="FieldMapRPHI_Offset.dat";
+__no_field_maps__DUMPFIELDS, X_START=0., X_STEPS=R0*80+1, DX=0.100/4.*2./3., Y_START=0., Y_STEPS=R0*80+1, DY=0.100/4.*2./3., Z_START=0.001, Z_STEPS=1, DZ=0.100, FILE_NAME="FieldMapXY.dat";
+__no_field_maps__DUMPFIELDS, X_START=3.6, X_STEPS=502, DX=0.003, Y_START=0.6, Y_STEPS=502, DY=0.003, Z_START=0, Z_STEPS=1, DZ=0.100, FILE_NAME="FieldMapXY-zoom.dat";
+__no_field_maps__DUMPEMFIELDS, COORDINATE_SYSTEM=CYLINDRICAL, R_START=R0-0.1, R_STEPS=1000, DR=1.e-3, PHI_START=0., PHI_STEPS=180, DPHI=0.25, Z_START=0, Z_STEPS=1, DZ=0.100, T_START=0, T_STEPS=1, DT=1., FILE_NAME="FieldMapRPHI.dat";
+__no_field_maps__DUMPEMFIELDS, COORDINATE_SYSTEM=CYLINDRICAL, R_START=R0-0.1, R_STEPS=1000, DR=1.e-3, PHI_START=0., PHI_STEPS=481, DPHI=1./480*30, Z_START=0.01, Z_STEPS=1, DZ=0.100, T_START=0, T_STEPS=1, DT=1., FILE_NAME="FieldMapRPHI_Offset.dat";
+__no_field_maps__DUMPEMFIELDS, COORDINATE_SYSTEM=CYLINDRICAL, R_START=R0, R_STEPS=1, DR=1.e-3, PHI_START=0., PHI_STEPS=360*100, DPHI=0.01, Z_START=0, Z_STEPS=1, DZ=0.100, T_START=100., T_STEPS=1, DT=1., FILE_NAME="FieldMapAzimuthal.dat";
+__no_field_maps__DUMPEMFIELDS, COORDINATE_SYSTEM=CYLINDRICAL, R_START=R0, R_STEPS=1, DR=1.e-3, PHI_START=90.05, PHI_STEPS=1, DPHI=1, Z_START=0, Z_STEPS=1, DZ=0.100, T_START=0., T_STEPS=1000, DT=2., FILE_NAME="FieldMapRf1.dat";
+__no_field_maps__DUMPEMFIELDS, COORDINATE_SYSTEM=CYLINDRICAL, R_START=R0, R_STEPS=1, DR=1.e-3, PHI_START=90.05, PHI_STEPS=1, DPHI=1, Z_START=0, Z_STEPS=1, DZ=0.100, T_START=100000., T_STEPS=1000, DT=2., FILE_NAME="FieldMapRf2.dat";
+__no_field_maps__DUMPEMFIELDS, COORDINATE_SYSTEM=CYLINDRICAL, R_START=R0, R_STEPS=1, DR=1.e-3, PHI_START=90.05, PHI_STEPS=1, DPHI=1, Z_START=0, Z_STEPS=1, DZ=0.100, T_START=200000., T_STEPS=1000, DT=2., FILE_NAME="FieldMapRf3.dat";
+__no_field_maps__DUMPEMFIELDS, COORDINATE_SYSTEM=CYLINDRICAL, R_START=R0, R_STEPS=1, DR=1.e-3, PHI_START=90.05, PHI_STEPS=1, DPHI=1, Z_START=0, Z_STEPS=1, DZ=0.100, T_START=300000., T_STEPS=1000, DT=2., FILE_NAME="FieldMapRf4.dat";
+__no_field_maps__DUMPEMFIELDS, COORDINATE_SYSTEM=CYLINDRICAL, R_START=R0, R_STEPS=1, DR=1.e-3, PHI_START=90.05, PHI_STEPS=1, DPHI=1, Z_START=0, Z_STEPS=1, DZ=0.100, T_START=400000., T_STEPS=1000, DT=2., FILE_NAME="FieldMapRf5.dat";
+__no_field_maps__DUMPEMFIELDS, COORDINATE_SYSTEM=CYLINDRICAL, R_START=R0, R_STEPS=1, DR=1.e-3, PHI_START=90.05, PHI_STEPS=1, DPHI=1, Z_START=0, Z_STEPS=1, DZ=0.100, T_START=500000., T_STEPS=1000, DT=2., FILE_NAME="FieldMapRf6.dat";
 
-
-l1: Line = (ringdef, probe1, probe2, probe3, probe4, probe5, probe6, probe7, probe8, probe9, probe10, probe11, probe12, halfDrift, magnetD, magnetF, halfDrift); // magnetD,
+cell: Line = (halfDrift, magnetD, magnetF, halfDrift);
+l1: Line = (ringdef, probe1, probe2, probe3, probe4, probe5, probe6, probe7, probe8, probe9, probe10, probe11, probe12, probe13, probe14, probe15,
+            cell, cell, cell, cell, cell,
+            cell, cell, cell, cell, cell,
+            cell, cell, cell, cell, cell,
+            cavity_drift, rf_cavity
+           );
 
 Dist1: DISTRIBUTION, TYPE=fromfile, FNAME="__beamfile__", INPUTMOUNITS=NONE;
 
