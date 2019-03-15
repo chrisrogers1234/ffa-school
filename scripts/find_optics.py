@@ -13,14 +13,10 @@ import ROOT
 from opal_tracking import OpalTracking
 import xboa.common as common
 from xboa.hit import Hit
-from xboa.algorithms.tune import FFTTuneFinder
-from xboa.algorithms.tune import DPhiTuneFinder
 
 import utilities
 
-# CHECK - why is there a sign error?
-
-class Tune(object):
+class Optics(object):
     def __init__(self, config):
         """
         Find the tune. 
@@ -36,13 +32,12 @@ class Tune(object):
         self.tmp_dir = None
         self.unique_id = 1
         self.lattice_src = config.tracking["lattice_file"]
-        self.probe_filename = config.find_tune["probe_files"]
+        self.probe_filename = config.find_optics["probe_files"]
         co_file = os.path.join(config.run_control["output_dir"], config.find_closed_orbits["output_file"]+".out")
         self._load_closed_orbits(co_file)
-        self.delta_x = config.find_tune["delta_x"]
-        self.delta_y = config.find_tune["delta_y"]
-        self.row = config.find_tune["row_list"]
-        self.do_axis = config.find_tune["axis"]
+        self.delta_x = config.find_optics["delta_x"]
+        self.delta_y = config.find_optics["delta_y"]
+        self.do_axis = config.find_optics["axis"]
         self.opal = config.tracking["opal_path"]
         self.step_size = config.tracking["step_size"]
         self.config = config
@@ -50,7 +45,7 @@ class Tune(object):
         self.lattice = "/SectorFFAGMagnet.tmp"
         self.beam_file = "/disttest.dat"
         self.log_file = "/log"
-        self.output_filename = config.find_tune["output_file"]
+        self.output_filename = config.find_optics["output_file"]
         self.output_dir = config.run_control["output_dir"]
 
     def find_tune_dphi(self):
@@ -76,7 +71,7 @@ class Tune(object):
             for item, key in self.config.find_tune["subs_overrides"].iteritems():
                 subs[item] = key
 
-            print "Finding tune with", 
+            print "Finding optics with", 
             for key in sorted(subs.keys()):
                 print utilities.sub_to_name(key), subs[key],
             print
@@ -98,49 +93,6 @@ class Tune(object):
                                         self.opal,
                                         self.tmp_dir+self.log_file)
                 tracking.clear_path = self.tmp_dir+"/*.loss"
-                finder = DPhiTuneFinder()
-                try:
-                    finder.run_tracking(axis1, axis2, delta1, delta2, hit, tracking)
-                except RuntimeError:
-                    sys.excepthook(*sys.exc_info())
-                for track_index, track in enumerate(tracking.last):
-                    print 'Track', track_index, 'of', len(tracking.last), \
-                          'with', len(track), 'hits'
-                    #for hit in track:
-                    #    print '    ', hit['t'], 'polar:', math.atan2(hit['y'], \
-                    #          hit['x']), (hit['y']**2+hit['x']**2)**0.5, \
-                    #          'cart:', hit['x'], hit['y'], hit['z']
-                finder.u = finder.u[1:]
-                finder.up = finder.up[1:]
-                try:
-                    tune = finder.get_tune(subs["__n_turns__"]/10.)
-                except:
-                    tune = 0.
-                print '  Found', len(finder.dphi), 'dphi elements'
-                tune_info[axis1+"_tune"] = tune
-                tune_info[axis1+"_tune_rms"] = finder.tune_error
-                tune_info[axis1+"_signal"] = zip(finder.u, finder.up)
-                tune_info[axis1+"_dphi"] = finder.dphi
-                tune_info[axis1+"_n_cells"] = len(finder.dphi)
-                canvas, hist, graph = finder.plot_phase_space()
-                name = os.path.join(self.output_dir, "tune_"+str(i)+"_"+axis1+"_phase-space")
-                for format in "png", "eps", "root":
-                    canvas.Print(name+"."+format)
-                canvas, hist, graph = finder.plot_cholesky_space()
-                name = os.path.join(self.output_dir, "tune_"+str(i)+"_"+axis1+"_cholesky-space")
-                for format in "png", "eps", "root":
-                    canvas.Print(name+"."+format)
-                for i, u in enumerate([]):#finder.u[:-1]):
-                    up = finder.up[i]
-                    dphi = finder.dphi[i]
-                    t = finder.t[i]
-                    u_chol = finder.point_circles[i][0]
-                    up_chol = finder.point_circles[i][1]
-                    phi = math.atan2(up_chol, u_chol)
-                    print str(i).ljust(4),  str(round(t, 4)).rjust(8), "...", \
-                          str(round(u, 4)).rjust(8), str(round(up, 4)).rjust(8), "...", \
-                          str(round(u_chol, 4)).rjust(8), str(round(up_chol, 4)).rjust(8), "...", \
-                          str(round(phi, 4)).rjust(8), str(round(dphi, 4)).rjust(8)
 
             for key in sorted(tune_info.keys()):
                 if "signal" not in key and "dphi" not in key:
@@ -151,7 +103,7 @@ class Tune(object):
 
     def _temp_dir(self):
         """Make a temporary directory for tune calculation"""
-        tmp_dir = os.path.join(self.output_dir, "tmp/tune/")
+        tmp_dir = os.path.join(self.output_dir, "tmp/find_optics/")
         try:
             os.makedirs(tmp_dir)
         except OSError:
@@ -175,15 +127,6 @@ class Tune(object):
         hit["x"] = 0.
         hit["px"] = 0.
         return hit
-
-def main(config):
-    tune = Tune(config)
-    tune.find_tune_dphi()
-    ROOT.gROOT.SetBatch(False)
-
-
-if __name__ == "__main__":
-    main()
 
 
 

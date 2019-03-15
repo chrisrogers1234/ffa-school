@@ -40,6 +40,9 @@ class StoreDataInMemory(object):
             self.hit_dict_of_lists[event] = []
         self.hit_dict_of_lists[event].append(hit)
 
+    def clear(self):
+        self.hit_dict_of_lists = {}
+
     def finalise(self):
         # convert from a dict of list of hits to a list of list of hits
         # one list per event
@@ -48,7 +51,7 @@ class StoreDataInMemory(object):
         hit_list_of_lists = [self.hit_dict_of_lists[ev] for ev in events]
         # sort by time within each event
         for i, hit_list in enumerate(hit_list_of_lists):
-            hit_list_of_lists[i] = sorted(hit_list, key = lambda hit: hit['t'])        
+            hit_list_of_lists[i] = sorted(hit_list, key = lambda hit: hit['t'])
         self.last = hit_list_of_lists
         self.hit_dict_of_lists = {}
         return hit_list_of_lists
@@ -57,7 +60,7 @@ class OpalTracking(TrackingBase):
     """
     Provides an interface to OPAL tracking routines for use by xboa.algorithms
     """
-    def __init__(self, lattice_filename, beam_filename, reference_hit, output_filename, opal_path, log_filename, save_dir = None, n_cores = 1, mpi = None):
+    def __init__(self, lattice_filename, beam_filename, reference_hit, output_filename, opal_path, log_filename = None, save_dir = None, n_cores = 1, mpi = None):
         """
         Initialise OpalTracking routines
         - lattice_filename is the Opal lattice file that OpalTracking will use
@@ -75,9 +78,12 @@ class OpalTracking(TrackingBase):
           terminal output from the opal command; if None, OpalTracking will make
           a temp file
         """
+        self.verbose = True
         self.beam_filename = beam_filename
         self.lattice_filename = lattice_filename
-        self.output_name = output_filename
+        if type(output_filename) == type(""):
+            output_filename = [output_filename]
+        self.output_name_list = output_filename
         self.opal_path = opal_path
         if not os.path.isfile(self.opal_path):
             raise RuntimeError(str(self.opal_path)+" does not appear to exist."+\
@@ -92,6 +98,17 @@ class OpalTracking(TrackingBase):
         self.save_dir = save_dir
         self.n_cores = n_cores
         self.mpi = mpi
+        self.clear_path = None
+
+    def get_names(self):
+        """
+        Get a list of names by globbing self.output_name_list
+        """
+        name_list = []
+        for name in self.output_name_list:
+            name_list += glob.glob(name)
+        name_list = sorted(list(set(name_list)))
+        return name_list
 
     def save(self):
         """
@@ -100,7 +117,7 @@ class OpalTracking(TrackingBase):
         """
         if self.save_dir == None:
             return
-        for probe_file in glob.glob(output_filename):
+        for probe_file in self.get_names():
             target = os.path.join(self.save_dir, probe_file)
             os.rename(probe_file, target)
 
@@ -108,8 +125,12 @@ class OpalTracking(TrackingBase):
         """
         Delete output files (prior to tracking)
         """
-        for probe_file in glob.glob(self.output_name):
-            os.unlink(probe_file)
+        if self.clear_path == None:
+            clear_files = self.get_names()
+        else:
+            clear_files = glob.glob(self.clear_path)
+        for a_file in clear_files:
+            os.unlink(a_file)
 
     def track_one(self, hit):
         """
@@ -134,7 +155,6 @@ class OpalTracking(TrackingBase):
         else:
             hit_list_of_lists = self._read_probes(pass_through_analysis)
             self.save()
-            print "OUTPUT", hit_list_of_lists[0][0]['kinetic_energy']
             return hit_list_of_lists
 
     def open_subprocess(self):
@@ -164,7 +184,8 @@ class OpalTracking(TrackingBase):
         return proc
 
     def _tracking(self, list_of_hits):
-        print "Using logfile ", self.log_filename
+        if self.verbose:
+            print "Tracking using logfile ", self.log_filename
         open(self.lattice_filename).close() # check that lattice exists
         m, GeV = common.units["m"], common.units["GeV"]
         p_mass = common.pdg_pid_to_mass[2212]
@@ -172,19 +193,20 @@ class OpalTracking(TrackingBase):
         print >> fout, len(list_of_hits)
         for i, hit in enumerate(list_of_hits):
             keys = ['x', 'y', 'z', 'px', 'py', 'pz', 'kinetic_energy']
-            print '           ',
-            for key in keys:
-                print key.ljust(8),
-            if i < 1 or i == len(list_of_hits)-1:
-                print '\n    hit ...',
+            if self.verbose:
+                print '           ',
                 for key in keys:
-                    print str(round(hit[key], 3)).ljust(8),
-                print '\n    ref ...',
-                for key in 'x', 'y', 'z', 'px', 'py', 'pz', 'kinetic_energy':
-                    print str(round(self.ref[key], 3)).ljust(8),
-                print
-            if i == 1 and len(list_of_hits) > 2:
-                print "<", len(list_of_hits)-2, " more hits>"
+                    print key.ljust(8),
+                if i < 1 or i == len(list_of_hits)-1:
+                    print '\n    hit ...',
+                    for key in keys:
+                        print str(round(hit[key], 3)).ljust(8),
+                    print '\n    ref ...',
+                    for key in 'x', 'y', 'z', 'px', 'py', 'pz', 'kinetic_energy':
+                        print str(round(self.ref[key], 3)).ljust(8),
+                    print
+                if i == 1 and len(list_of_hits) > 2:
+                    print "<", len(list_of_hits)-2, " more hits>"
             x = (hit["x"]-self.ref["x"])/m
             y = (hit["y"]-self.ref["y"])/m
             z = (hit["z"]-self.ref["z"])/m
@@ -197,7 +219,8 @@ class OpalTracking(TrackingBase):
         old_time = time.time()
         proc = self.open_subprocess()
         proc.wait()
-        print "Ran for", time.time() - old_time, "s"
+        if self.verbose:
+            print "Ran for", time.time() - old_time, "s"
         # returncode 1 -> particle fell out of the accelerator
         if proc.returncode != 0 and proc.returncode != 1:
             raise RuntimeError("OPAL quit with non-zero error code "+\
@@ -214,21 +237,27 @@ class OpalTracking(TrackingBase):
 
     def _read_probes(self, pass_through_analysis):
         # loop over files in the glob, read events and sort by event number
-        file_list = glob.glob(self.output_name)
+        file_list = self.get_names()
+        if len(file_list) == 0:
+            name_list = str(self.output_name_list)
+            raise IOError("Failed to load any probes from "+name_list)
         fin_list = [open(file_name) for file_name in file_list]
         line = "0"
         line_number = 0
         while line != "" and len(fin_list) > 0:
-            for fin in fin_list: 
+            line_number += 1
+            for i, fin in enumerate(fin_list):
                 line = fin.readline()
                 if line == "":
                     break
                 try:
-                    event, hit = self.read_one_line(line, line_number)
+                    event, hit = self.read_one_line(line, i)
                     pass_through_analysis.process_hit(event, hit)
                 except ValueError:
-                   pass
-                line_number += 1
+                    pass
+                    # OPAL accumulates LOSS over many runs, but this may not be
+                    # desired; so clear
+                    #pass_through_analysis.clear()
         self.last = pass_through_analysis.finalise()
         return self.last
    

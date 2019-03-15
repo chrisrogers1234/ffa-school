@@ -11,7 +11,10 @@ import find_closed_orbits
 import find_tune
 import find_da
 import find_rf_parameters
+import find_bump_parameters
+import track_bump
 import track_beam
+import utilities
 
 def get_config():
     config_file = sys.argv[1].replace(".py", "")
@@ -40,6 +43,7 @@ def master_substitutions(config):
 def main():
     config = get_config()
     output_dir(config)
+    utilities.setup_gstyle()
     #master_substitutions(config)
     if config.run_control["find_closed_orbits"]:
         find_closed_orbits.main(config)
@@ -47,6 +51,10 @@ def main():
         find_tune.main(config)
     if config.run_control["find_rf_parameters"]:
         find_rf_parameters.main(config)
+    if config.run_control["find_bump_parameters"]:
+        find_bump_parameters.main(config)
+    if config.run_control["track_bump"]:
+        track_bump.main(config)
     if config.run_control["find_da"]:
         find_da.main(config)
     if config.run_control["track_beam"]:

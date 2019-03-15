@@ -19,21 +19,19 @@ def get_baseline_substitution():
         "__mx__":5,
         "__my__":5,
         "__mt__":5,
-        "__test_probe__":0.0,
         # main magnets
         "__b_mean__":-3.*(1.*4.8-0.36*2.4)/24.,
         "__df_ratio__":-0.36,
         "__d_length__":0.1,
         "__f_length__":0.2,
-        "__d_end_length__":(1.0/math.cos(math.radians(41)))/1.0/2.4,  #*0.9/2.,
-        "__f_end_length__":(1.0/math.cos(math.radians(41)))/3.65/4.8,  #*0.5/2.,
-        "__tan_delta__":-math.tan(math.radians(41)),
+        "__d_end_length__":0.9*(1.5/math.cos(math.radians(41))/2.)/2.4,
+        "__f_end_length__":0.5*(1.5/math.cos(math.radians(41))/2.)/4.8,
+        "__tan_delta__":math.tan(math.radians(41)),
         "__field_index__":7.1,
         "__max_y_power__":2,
         "__neg_extent__":0.2,
         "__pos_extent__":0.8,
         # rf
-        "__cavity__":"no_cavity",
         "__rf_voltage__":0.,
         "__rf_phase__":1.90862003999-math.radians(20), # [rad]
         "__rf_freq_0__":0.93656519779, # [MHz]
@@ -48,8 +46,8 @@ def get_baseline_substitution():
         "__bump_width__":1.0,
         "__bump_offset__":0.0, # radial offset, m
         "__bump_angle__":41.0, # angular tilt of bump cavity
-        "__phi_foil_probe__":3.2,
-        "__phi_bump_1__":+0.35,
+        "__phi_foil_probe__":1.2,
+        "__phi_bump_1__":-0.3,
         "__phi_bump_2__":-0.65,
         "__phi_bump_3__":-1.3,
         "__phi_bump_4__":-1.65,
@@ -57,21 +55,20 @@ def get_baseline_substitution():
         "__bump_field_2__":0.0, #+0.0,
         "__bump_field_3__":0.0, #+0.157288331088,
         "__bump_field_4__":0.0, #-0.20832864219,
-        "__septum_field__":0.0, #-0.20832864219,
     }
     return baseline
 
 class Config(object):
     def __init__(self):
         self.find_closed_orbits = {
-            "seed":[[4042.10640218, -8.47136893],],
+            "seed":[[4038.1558573, 7.2435728],],
             "output_file":"find_closed_orbit",
-            "subs_overrides":{"__n_turns__":1.1, "__no_field_maps__":""},
+            "subs_overrides":{"__n_turns__":10.1, "__no_field_maps__":""},
             "root_batch":0,
-            "max_iterations":10,
-            "do_plot_orbit":False,
+            "max_iterations":5,
+            "do_plot_orbit":True,
             "run_dir":"tmp/find_closed_orbits/",
-            "probe_files":"RINGPROBE*.loss",
+            "probe_files":"RINGPROBE01.loss",
         }
         self.find_tune = {
             "run_dir":"tmp/find_tune/",
@@ -88,7 +85,7 @@ class Config(object):
         self.find_da = {
             "run_dir":"tmp/find_da/",
             "probe_files":"RINGPROBE01.loss",
-            "subs_overrides":{"__n_turns__":50.1, "__no_field_maps__":"// "},
+            "subs_overrides":{"__n_turns__":500.1, "__no_field_maps__":"// "},
             "get_output_file":"get_da",
             "scan_output_file":"scan_da",
             "row_list":None,
@@ -98,7 +95,7 @@ class Config(object):
             "y_seed":1.,
             "min_delta":1.0,
             "max_delta":500.,
-            "required_n_hits":50,
+            "required_n_hits":500,
             "max_iterations":10,
         }
         self.find_rf_parameters = {
@@ -120,9 +117,9 @@ class Config(object):
         self.find_bump_parameters = {
              # nb: natural position for foil at 3.2 is 4085; cf closed orbit at
              # 4038, hence offset of 47 mm
-            "bump":[[-10.*i+47.4, 0.0 ] for i in range(1)],
+            "bump":[[-10.*i+47.4, 0.0 ] for i in range(0, 11)],
             "output_file":"find_bump_parameters",
-            "closed_orbit":[4042.10640218, -8.47136893],
+            "closed_orbit":[4038.1558573, 7.2435728],
             "magnet_min_field":-1.0,
             "magnet_max_field":+1.0,
             "max_iterations":500,
@@ -136,19 +133,19 @@ class Config(object):
                 "__n_turns__":1.1,
                 "__no_field_maps__":""
             },
-            "fix_bumps":["__bump_field_2__"],
-            "seed_field":[0.0, 0.0, 0.0, 0.0],
+            "fix_bumps":["__bump_field_"+str(i)+"__"for i in [2]],
+            "seed_field":[0.0, 0.2, 0.0, 0.0],
             "seed_errors":[0.1, 0.1, 0.1, 0.1],
             "foil_probe_phi":3.2,
             "bump_probe_station":0,
-            "ignore_stations":[4, 5, 6, 7],
-            "ref_probe_files":["FOILPROBE.loss", "TESTPROBE.loss", "RINGPROBE*.loss"],
+            "ignore_stations":[4, 5],
+            "ref_probe_files":["FOILPROBE.loss", "RINGPROBE*.loss"],
             "run_dir":"tmp/find_bump/",
             "energy":3.0,
         }
         self.track_bump = {
             "input_file":"find_bump_parameters.out",
-            "injection_orbit":0, # reference to item from bump_list
+            "injection_orbit":10, # reference to item from bump_list
             "subs_overrides":{
                 "__n_turns__":1.2,
                 "__no_field_maps__":"",
@@ -161,7 +158,6 @@ class Config(object):
             "ramp_probe_phi":5, # cell number where we start the beam following an injection
             "run_dir":"tmp/track_bump/",
             "energy":3.0,
-            "bump_probe_station":0,
         }
         self.track_beam = {
             "run_dir":"tmp/track_beam/",
@@ -183,15 +179,15 @@ class Config(object):
         self.substitution_list = [get_baseline_substitution()]
         
         self.run_control = {
-            "find_closed_orbits":True,
-            "find_tune":True,
-            "find_da":True,
+            "find_closed_orbits":False,
+            "find_tune":False,
+            "find_da":False,
             "find_rf_parameters":False,
-            "find_bump_parameters":False,
+            "find_bump_parameters":True,
             "track_beam":False,
-            "track_bump":False,
+            "track_bump":True,
             "clean_output_dir":False,
-            "output_dir":os.path.join(os.getcwd(), "output/baseline"),
+            "output_dir":os.path.join(os.getcwd(), "output/bump_2"),
         }
 
         self.tracking = {
@@ -204,6 +200,5 @@ class Config(object):
             "tracking_log":"log",
             "step_size":1.,
             "pdg_pid":2212,
-            "clear_files":"*.loss",
         }
 

@@ -43,11 +43,12 @@ def plot_iteration(sub_index, i, iteration, energy):
     canvas, hist, graph, fit = iteration.plot_ellipse("x", "px", "mm", "MeV/c")
     hist.SetTitle('KE='+str(energy)+' iter='+str(i))
     canvas.Update()
-    name = os.path.join(OUT_DIR, "closed_orbit-sub-index_"+str(sub_index)+"-i_"+str(i))
+    name = os.path.join(OUT_DIR, "find_closed_orbits")
+    name = os.path.join(name, "closed_orbit-sub-index_"+str(sub_index)+"-i_"+str(i))
     for format in "eps", "root", "png":
         canvas.Print(name+"."+format)
 
-def find_closed_orbit(sub_index, subs, seed, max_iterations):
+def find_closed_orbit(sub_index, subs, seed, config):
     """
     Find the closed orbit; algorithm is to track turn by turn; fit an ellipse to
     the tracking; find the centre of the ellipse; repeat until no improvement or
@@ -60,6 +61,8 @@ def find_closed_orbit(sub_index, subs, seed, max_iterations):
     - seed: (list of 2 floats) [x, px] value to be used as the seed for the next 
             iteration; px value is ignored, sorry about that.
     """
+    max_iterations = config.find_closed_orbits["max_iterations"]
+    probe = config.find_closed_orbits["probe_files"]
     for key in sorted(subs.keys()):
         print utilities.sub_to_name(key), subs[key],
     print
@@ -76,7 +79,7 @@ def find_closed_orbit(sub_index, subs, seed, max_iterations):
     energy = subs["__energy__"]
     ref_hit = reference(energy)
     opal_exe = os.path.expandvars("${OPAL_EXE_PATH}/opal")
-    tracking = OpalTracking(tmp_dir+'/SectorFFAGMagnet.tmp', tmp_dir+'/disttest.dat', ref_hit, 'PROBE*.loss', opal_exe, tmp_dir+"/log")
+    tracking = OpalTracking(tmp_dir+'/SectorFFAGMagnet.tmp', tmp_dir+'/disttest.dat', ref_hit, probe, opal_exe, tmp_dir+"/log")
     seed_hit = ref_hit.deepcopy()
     seed_hit["x"] = seed[0]
     seed_hit["px"] = seed[1]
@@ -151,6 +154,9 @@ def get_seed(config, results, subs):
         for var in seed_var.keys():
             var1 = results[-1]["hits"][0][var]
             var0 = results[-2]["hits"][0][var]
+            if abs(key1-key0) < 1e-9: # div0
+                seed_var[var] = var1
+                continue
             delta = (var1-var0)/(key1-key0)*(key2-key1)
             print "      var", var, "values", var1, var0, "delta", delta
             seed_var[var] += delta
@@ -162,8 +168,9 @@ def main(config):
     global CONFIG, OUT_DIR, RUN_DIR
     CONFIG = config
     OUT_DIR = CONFIG.run_control["output_dir"]
+    utilities.clear_dir(os.path.join(OUT_DIR, "find_closed_orbits"))
+
     RUN_DIR = os.path.join(OUT_DIR, "tmp/find_closed_orbits/")
-    max_iterations = config.find_closed_orbits["max_iterations"] 
     fout_name = os.path.join(OUT_DIR, config.find_closed_orbits["output_file"])
     fout = open(fout_name+".tmp", 'w')
     subs_list = config.substitution_list
@@ -176,9 +183,14 @@ def main(config):
         ROOT.gROOT.SetBatch(is_batch)
         hit_list = []
         while will_loop:
-            next_seed, will_loop = get_seed(config, results, sub)
             try:
-                hit_list = find_closed_orbit(i, sub, next_seed, max_iterations)
+                next_seed, will_loop = get_seed(config, results, sub)
+            except Exception:
+                co_hit = results[0]["hits"][0]
+                next_seed = [co_hit["x"], co_hit["px"]]
+                will_loop = False
+            try:
+                hit_list = find_closed_orbit(i, sub, next_seed, config)
             except IndexError, ValueError:
                 sys.excepthook(*sys.exc_info())
             except RuntimeError:
@@ -192,7 +204,9 @@ def main(config):
         print >> fout, json.dumps(output)
         fout.flush()
         if config.find_closed_orbits["do_plot_orbit"] and i == 0:
-            plot_orbit.main(config.run_control["output_dir"], "tmp/find_closed_orbits/", "SectorFFAGMagnet-trackOrbit.dat")
+            plot_orbit.main(config.run_control["output_dir"],
+                            "tmp/find_closed_orbits/",
+                            "SectorFFAGMagnet-trackOrbit.dat")
     fout.close()
     time.sleep(1)
     os.rename(fout_name+".tmp", fout_name+".out")

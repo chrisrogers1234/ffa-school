@@ -19,10 +19,16 @@ class PlotDumpFields(object):
         
     def plot(self):
         self.load_dump_fields()
+        print self.keys
         if "r" in self.keys:
             canvas_xy = self.plot_dump_fields("phi", "r", "bz")
         else:
             canvas_xy = self.plot_dump_fields("x", "y", "bz")
+            canvas_xy.Print("bz_vs_x-y.png")
+            canvas_xy = self.plot_dump_fields("x", "y", "bx")
+            canvas_xy.Print("bx_vs_x-y.png")
+            canvas_xy = self.plot_dump_fields("x", "y", "by")
+            canvas_xy.Print("by_vs_x-y.png")
         return canvas_xy
 
     def plot_1d(self, cuts, ax1, ax2):
@@ -115,7 +121,6 @@ class PlotDumpFields(object):
                 for i, key in enumerate(self.keys):
                     self.field_map[key].append(data[i]*units_[i])
             except (ValueError, IndexError):
-                print line[:-1]
                 continue
         if 'phi' in self.field_map.keys():
             self.calculate_cartesian_fields()
@@ -213,8 +218,10 @@ class PlotDumpFields(object):
     def plot_dump_fields(self, var_1, var_2, var_3):
         min_1, max_1, n_1 = self.get_bin_list(var_1)
         min_2, max_2, n_2 = self.get_bin_list(var_2)
+        min_3, max_3 = min(self.field_map[var_3]), max(self.field_map[var_3])
         unique_id = str(len(self.root_objects))
         name = var_3+" vs "+var_1+" and "+var_2+" "+unique_id
+        self.set_z_axis(min_3, max_3)
         canvas = ROOT.TCanvas(name)
         name_dict = self.name_dict
         hist = ROOT.TH2D(name, var_3+";"+name_dict[var_1]+";"+name_dict[var_2], n_1, min_1, max_1, n_2, min_2, max_2)
@@ -261,9 +268,32 @@ class PlotDumpFields(object):
         }
         return rf_parameters
 
+    def set_z_axis(self, min_z, max_z):
+          r0, g0, b0 = 0.2082, 0.1664, 0.8293
+          r1, g1, b1 = 1.0, 0.5293, 0.1664
+          stops = [0.0000,1.0]
+          red   = [r0, r1]
+          green = [g0, g1/2.]
+          blue  = [b0, b1]
+          if min_z < 0 and max_z > 0:
+              delta_z = max_z - min_z
+              stops = [0.0000, -min_z/delta_z-0.01, -min_z/delta_z, -min_z/delta_z+0.01, 1.0]
+              red   = [r0, 0.2, 1.0, 0.9, r1]
+              green = [g0, 1.0, 1.0, 0.93, g1]
+              blue  = [b0, 0.2, 1.0, 0.6, b1]
+
+          s = numpy.array(stops)
+          r = numpy.array(red)
+          g = numpy.array(green)
+          b = numpy.array(blue)
+
+          ncontours = 255
+          npoints = len(s)
+          ROOT.TColor.CreateGradientColorTable(npoints, s, r, g, b, ncontours)
+          ROOT.gStyle.SetNumberContours(ncontours)
 
 
-def main(a_dir = None):
+def main_rf(a_dir = None):
     if a_dir == None:
         a_dir = "output/baseline/tmp/find_closed_orbits"
     is_em_field = True
@@ -278,7 +308,7 @@ def main(a_dir = None):
     plotter = PlotDumpFields(a_dir+"/FieldMapAzimuthal.dat", is_em_field)
     plotter.load_dump_fields()
     canvas_1d, hist, graph = plotter.plot_1d({"r":4.}, "phi", "ephi")
-    for file_name in glob.glob(a_dir+"/FieldMapRf*.dat"):
+    for file_name in glob.glob(a_dir+"/FieldMapRf?.dat"):
         plotter = PlotDumpFields(file_name, is_em_field)
         plotter.load_dump_fields()
         canvas_1d, hist, graph = plotter.plot_1d({"r":4.}, "t", "ephi")
@@ -287,11 +317,31 @@ def main(a_dir = None):
         print item
     return rf_list
 
+
+def main(a_dir = None):
+    if a_dir == None:
+        a_dir = "output/baseline/tmp/find_closed_orbits"
+    is_em_field = False
+    #plotter = PlotDumpFields(a_dir+"/FieldMapRPHI.dat", is_em_field)
+    #canvas_xy = plotter.plot()
+    #canvas_1d, hist, graph = plotter.plot_1d({"r":4.}, "phi", "bz")
+    #for fmt in "png", "eps", "root":
+    #    canvas_1d.Print(a_dir+"/field_1d."+fmt)
+    #    canvas_xy.Print(a_dir+"/field_2d."+fmt)
+    rf_list = []
+    time, frequency = [], []
+    plotter = PlotDumpFields(a_dir+"/FieldMapXY.dat", is_em_field)
+    plotter.load_dump_fields()
+    canvas_xy = plotter.plot()
+    canvas_xy.Print("field_map_xy.png")
+    for item in rf_list:
+        print item
+    return rf_list
+
 if __name__ == "__main__":
     if len(sys.argv) < 2  or not os.path.isdir(sys.argv[1]):
         print "Usage: 'python plot_dump_fields path/to/target/directory'"
     else:
-        target_directory = sys.argv[1]
-        main(sys.argv[1])
+        main(sys.argv[1:])
     raw_input("Press <CR> to end")
 

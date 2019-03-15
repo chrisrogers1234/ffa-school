@@ -50,7 +50,10 @@ class FindRFParameters(object):
         e1 = self.config.find_rf_parameters["end_energy"]
         n_steps = self.config.find_rf_parameters["n_steps"]
         de_list = self.config.find_rf_parameters["delta_energy_list"]
-        e_step = (e1-self.e0)/(n_steps-1)
+        if n_steps > 1:
+            e_step = (e1-self.e0)/(n_steps-1)
+        else:
+            e_step = 1.
         energy_list = [e_step*i + self.e0 for i in range(n_steps)]+de_list
         energy_list = sorted(energy_list)
         for i, ref_subs in enumerate(self.config.substitution_list):
@@ -70,6 +73,9 @@ class FindRFParameters(object):
                 subs["__energy__"] = energy
                 new_sub_list.append(subs)
             co_config.substitution_list = new_sub_list
+            find_closed_orbits.CONFIG = None
+            find_closed_orbits.OUT_DIR = None
+            find_closed_orbits.RUN_DIR = None
             find_closed_orbits.main(co_config)
 
     def load_closed_orbits(self):
@@ -160,7 +166,6 @@ class FindRFParameters(object):
         graph.SetLineColor(ROOT.kBlue)
         graph.Draw("L")
         self.canvases["t vs e "+str(index)] = canvas
-
 
     def setup_subs_for_rf(self, index, phase, polynomial_coefficients):
         if polynomial_coefficients == None:
@@ -343,8 +348,11 @@ class FindRFParameters(object):
                 graph.Draw("L")
 
                 first = False
-
-            rf_parameters = plot_dump_fields.main(self.tmp_dir)
+            try:
+                rf_parameters = plot_dump_fields.main(self.tmp_dir)
+            except Exception:
+                sys.excepthook(*sys.exc_info())
+                rf_parameters = []
             self.canvases["t vs f "+str(index)].cd()
             time_list = [data["t0"] for data in rf_parameters]
             freq_list = [data["frequency"]*1e3 for data in rf_parameters]
@@ -353,10 +361,11 @@ class FindRFParameters(object):
             graph.SetMarkerColor(ROOT.kRed)
             graph.Draw("P")
             canvas.Update()
-            for key, value in self.canvases.iteritems():
+            for key, canvas in self.canvases.iteritems():
+                canvas.cd()
+                canvas.Update()
                 for fmt in "root", "png", "pdf":
-                    name = self.output_dir+"/"+key.replace(" ", "_")
-                    canvas.Update()
+                    name = self.output_dir+"/rf_"+key.replace(" ", "_")
                     canvas.Print(name+"."+fmt)
 
 
