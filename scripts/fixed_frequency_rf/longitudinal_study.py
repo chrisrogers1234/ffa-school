@@ -24,11 +24,12 @@ class ToyLongitudinal(object):
         self.phi_s = 0.2
         self.omega = 2*math.pi*0.1/self.tof(self.p0)
         self.mass = xboa.common.pdg_pid_to_mass[2212]
-
         self.cavity_phase = [0., math.pi*0.5] # phase of cavity
         self.azimuthal_angle = [0.]+[0., 0.]+[1.] # position of cavity
         self.phase_list = [[], []] # phi_eff vs radius
-        
+
+        self.plot_dir = "./"
+        self.output_dir = "./"
 
     def setup_lookup(self, filename, n_cells):
         json_in = [json.loads(line) for line in open(filename).readlines()]
@@ -230,15 +231,22 @@ class ToyLongitudinal(object):
                 break
         return out_list
 
-    def plot_acceleration(self, out_list, line_color = 1, canvas = None):
+    def plot_acceleration(self, out_list, line_color = 1, canvas = None, min_e=0., max_e=None):
         energy_list = [(item[0]**2+self.mass**2)**0.5 -self.mass for item in out_list]
         phase_list = [self.time_to_phase(item[0], item[1])/math.pi/2. for item in out_list]
-        max_e = ((self.p1**2+self.mass**2)**0.5-self.mass)*1.1
-        hist, graph = xboa.common.make_root_graph("acceleration", phase_list, "#phi [rad/2#pi]", energy_list, "KE [MeV]", xmin=0.0, xmax=1., ymin=0., ymax=max_e, sort = False)
+        if max_e == None:
+            max_e = ((self.p1**2+self.mass**2)**0.5-self.mass)*1.1
+        hist, graph = xboa.common.make_root_graph("acceleration",
+                                                  phase_list, "#phi [rad/2#pi]",
+                                                  energy_list, "KE [MeV]", 
+                                                  xmin=0.0, xmax=1.,
+                                                  ymin=min_e, ymax=max_e,
+                                                  sort = False)
         if canvas == None:
             canvas = xboa.common.make_root_canvas("acceleration")
             canvas.Draw()
             hist.Draw()
+        canvas.cd()
         graph.SetLineColor(line_color)
         graph.SetMarkerColor(line_color)
         graph.SetMarkerStyle(7)
@@ -269,7 +277,6 @@ class ToyLongitudinal(object):
         canvas.Update()
         canvas.Print(self.plot_dir+"snapshot_"+str(index)+".pdf")
         return canvas
-
 
     @classmethod
     def ke(cls, p):
@@ -304,8 +311,9 @@ class ToyLongitudinal(object):
         graph.SetLineColor(line_color)
         graph.Draw("SAME L")
         canvas.Update()
-        canvas.Print(self.plot_dir+"radial_voltage_dependence.pdf")
-        fout = open(self.plot_dir+"/radial_voltage_dependence_"+str(station)+".out", "w")
+        for fmt in ["png", "pdf", "root"]:
+            canvas.Print(self.plot_dir+"/radial_voltage_dependence."+fmt)
+        fout = open(self.output_dir+"/radial_voltage_dependence_"+str(station)+".out", "w")
         for i, r in enumerate(radius):
             p = momentum[i]
             v = voltage[i]*10. # kV

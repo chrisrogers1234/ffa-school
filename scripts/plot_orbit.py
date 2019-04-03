@@ -265,10 +265,13 @@ def plot_elements_xy(log_file, canvas):
 def plot_cylindrical(output_dir, opal_run_dir, step_list_of_lists):
     field_plot = plot_dump_fields.PlotDumpFields(opal_run_dir+"FieldMapRPHI.dat", True)
     field_plot.load_dump_fields()
-    canvas_1d , hist, graph = field_plot.plot_1d({"r":4.}, "phi", "bz")
-    for format in ["png"]:
-        canvas_1d.Print(output_dir+"bz_1d."+format)
-    Colors.reset()
+    try:
+        canvas_1d , hist, graph = field_plot.plot_1d({"r":4.}, "phi", "bz")
+        for format in ["png"]:
+            canvas_1d.Print(output_dir+"bz_1d."+format)
+        Colors.reset()
+    except Exception:
+        sys.excepthook(*sys.exc_info())
     
     canvas_bz_offset = field_plot.plot_dump_fields("phi", "r", "bz")
     for step_list in step_list_of_lists:

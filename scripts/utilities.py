@@ -21,6 +21,16 @@ def sub_to_name(sub_key):
     sub_name = sub_name.replace("_", " ")
     return sub_name
 
+
+def sub_to_units(sub_key):
+    units = {
+        "energy":"MeV"
+    }
+    name = sub_to_name(sub_key)
+    if name in units:
+        return " ["+units[name]+"]"
+    return ""
+
 def reference(config, energy, x=0., px=0.):
     """
     Generate a reference particle

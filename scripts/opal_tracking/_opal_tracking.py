@@ -267,7 +267,7 @@ class OpalTracking(TrackingBase):
         for key in "pid", "mass", "charge":
             hit_dict[key] = self.ref[key]
         for i, key in enumerate(["x", "z", "y"]):
-            hit_dict[key] = float(words[i+1])
+            hit_dict[key] = float(words[i+1])*1000.
         for i, key in enumerate(["px", "pz", "py"]):
             hit_dict[key] = float(words[i+4])*self.ref["mass"]
         event = int(words[7])

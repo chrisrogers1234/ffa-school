@@ -13,7 +13,7 @@ def get_baseline_substitution():
         "__current__":1.6e-19,
         "__n_events__":1,
         # tracking
-        "__step_size__":10., # mm
+        "__step_size__":1., # mm
         "__n_turns__":2.1,
         "__solver__":"None",
         "__mx__":5,
@@ -76,7 +76,7 @@ class Config(object):
         self.find_tune = {
             "run_dir":"tmp/find_tune/",
             "probe_files":"RINGPROBE01.loss",
-            "subs_overrides":{"__n_turns__":50.1, "__no_field_maps__":"// "},
+            "subs_overrides":{"__n_turns__":50.1, "__no_field_maps__":"// ", "__step_size__":0.1},
             "root_batch":0,
             "delta_x":2.,
             "delta_y":1.,
@@ -180,16 +180,29 @@ class Config(object):
             "plot_events":[1, 2],
         }
 
+        self.find_fixed_frequency = {
+            "run_dir":"tmp/fixed_frequency/",
+            "co_file":"find_closed_orbit.out",
+            "plot_dir":"find_fixed_frequency/",
+            "subs_overrides":{
+                "__n_turns__":1000.0,
+                "__no_field_maps__":"//",
+                "__cavity__":"radial_cavity",
+            },
+            "probe_files":"RINGPROBE01.loss",
+        }
+        
         self.substitution_list = [get_baseline_substitution()]
         
         self.run_control = {
-            "find_closed_orbits":True,
+            "find_closed_orbits":False,
             "find_tune":True,
             "find_da":True,
             "find_rf_parameters":False,
             "find_bump_parameters":False,
             "track_beam":False,
             "track_bump":False,
+            "find_fixed_frequency_rf":False,
             "clean_output_dir":False,
             "output_dir":os.path.join(os.getcwd(), "output/baseline"),
         }

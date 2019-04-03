@@ -35,7 +35,7 @@ def clean_tune_data(data, verbose=False):
         my_data = sorted(my_data)
         if verbose:
             print "   ", my_data[-3:]
-        keep_going = len(my_data) > 2 and my_data[-1][0] > 2*std
+        keep_going = len(my_data) > 2 and my_data[-1][0] > 5*std
         my_data = my_data[:-1]
     my_data = [item[1] for item in my_data]
     if verbose:
@@ -50,6 +50,8 @@ def get_axes(axis_key, group_dict, tune_axis):
     canvas = xboa.common.make_root_canvas(canvas_name)
     tune = []
     ordinate = []
+    if x_name in units:
+        x_name += " ["+units[x_name]+"]"
     for group_key in group_dict:
         tune += group_dict[group_key]['x_tune']+group_dict[group_key]['y_tune']
         ordinate += group_dict[group_key]['axes'][axis_key]
@@ -83,7 +85,7 @@ def make_root_graph_errors(name, x_values, y_values, y_errors):
     sorted_values = sorted(sorted_values)
     for i in range(n_points):
         graph.SetPoint(i, sorted_values[i][0], sorted_values[i][1])
-        graph.SetPointError(i, 0., sorted_values[i][2])
+        graph.SetPointError(i, 0., 0.)#sorted_values[i][2])
         print sorted_values[i]
     graph.SetName(name)
     return graph
@@ -99,21 +101,24 @@ def do_one_1d_plot(axis_key, group_dict, plot_dir, tune_axis):
         graph_y = make_root_graph_errors(group_key+" #nu_{y}", item['axes'][axis_key], item['y_tune'], item['y_tune_err'])
         print "For group", group_key, "found", len(item['axes'][axis_key]), "items"
         print "   ", axis_key, item['axes'][axis_key]
-        print "    x tune", item['y_tune']
+        print "    x tune", item['x_tune']
         print "    y tune", item['y_tune']
         graph_x.SetMarkerStyle(24)
         graph_x.SetMarkerColor(x_color[0])
         graph_y.SetMarkerStyle(26)
         graph_y.SetMarkerColor(y_color[0])
-        graph_x.Draw("P L SAME")
-        graph_y.Draw("P L SAME")
+        graph_x.Draw("P SAME")
+        graph_y.Draw("P SAME")
         leg_list += [graph_x, graph_y]
         numpy.roll(x_color, 1)
         numpy.roll(y_color, 1)
     legend = xboa.common.make_root_legend(canvas, leg_list)
     legend.Draw()
-    legend.SetX1NDC(0.7)
-    legend.SetX2NDC(0.89)
+    legend.SetBorderSize(1)
+    legend.SetX1NDC(0.75)
+    legend.SetX2NDC(0.9)
+    legend.SetY2NDC(0.9)
+    legend.SetY1NDC(0.5)
     canvas.Update()
     canvas_name = canvas.GetTitle().replace(" ", "_")
     for format in "eps", "png", "root":
@@ -126,7 +131,7 @@ def do_ellipse_plot(axis_key, group_dict, plot_dir, tune_axis):
     multigraph = ROOT.TMultiGraph()
     for group_key in sorted(group_dict.keys()):
         for item in group_dict[group_key]['y_signal']:
-            print item
+            #print item
             x_list = [u[0] for u in item]
             y_list = [u[1] for u in item]
             hist, graph = xboa.common.make_root_graph(group_key, x_list, '[mm]', y_list, '[MeV/c]', sort=False)
@@ -190,8 +195,8 @@ def plot_data_1d(data, tune_axis, plot_dir, group_axis = None, cell_conversion =
         item_list = group_dict[group_key]['item_list']
         for i in item_list:
             item = data[i]
-            x_dphi = clean_tune_data(item['x_dphi'])
             verbose = False
+            x_dphi = clean_tune_data(item['x_dphi'], verbose)
             y_dphi = clean_tune_data(item['y_dphi'], verbose)
             if verbose:
                 print "X DPHI", sorted(x_dphi)
@@ -262,8 +267,10 @@ def plot_data_2d(data, tune_axis, plot_dir):
     for format in "eps", "png", "root":
         canvas.Print(plot_dir+"/tune_x_vs_y."+format)
 
+units = {"energy":"MeV",}
+
 def main():
-    for file_name in glob.glob("output/bump_design_no_bump/find_tune"):
+    for file_name in glob.glob("output/rogers_hack/find_tune"):
         plot_dir = os.path.split(file_name)[0]+"/plot_tune/"
         if os.path.exists(plot_dir):
             shutil.rmtree(plot_dir)
@@ -272,8 +279,8 @@ def main():
             data = load_file(file_name)
         except IndexError:
             continue
-        plot_data_1d(data, 'fractional ring tune', plot_dir, None, 1, False) # cell tune or ring tune
-        plot_data_2d(data, 'fractional ring tune', plot_dir) # cell tune or ring tune, plot x tune vs y tune
+        plot_data_1d(data, 'fractional cell tune', plot_dir, None, 1, False) # cell tune or ring tune
+        plot_data_2d(data, 'fractional cell tune', plot_dir) # cell tune or ring tune, plot x tune vs y tune
 
 if __name__ == "__main__":
     main()

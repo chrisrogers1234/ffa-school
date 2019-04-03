@@ -189,6 +189,7 @@ def main(config):
                 co_hit = results[0]["hits"][0]
                 next_seed = [co_hit["x"], co_hit["px"]]
                 will_loop = False
+            print "LOOPING DEBUG", next_seed, will_loop, sub['__energy__']
             try:
                 hit_list = find_closed_orbit(i, sub, next_seed, config)
             except IndexError, ValueError:

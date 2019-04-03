@@ -116,7 +116,7 @@ class Tune(object):
                     tune = finder.get_tune(subs["__n_turns__"]/10.)
                 except:
                     tune = 0.
-                print '  Found', len(finder.dphi), 'dphi elements'
+                print '  Found', len(finder.dphi), 'dphi elements with tune', tune, "+/-", finder.tune_error
                 tune_info[axis1+"_tune"] = tune
                 tune_info[axis1+"_tune_rms"] = finder.tune_error
                 tune_info[axis1+"_signal"] = zip(finder.u, finder.up)

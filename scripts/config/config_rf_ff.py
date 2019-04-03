@@ -1,22 +1,30 @@
 import math
 import os
+import copy
+
 import config_base
 
-DIR = "fixed_frequency_rf"
+DIR = "fixed_frequency_rf/"
 
 
 def get_substitution_list():
-    energy_list = [range(3, 5, 1)]
-    substitution_list = [config_base.get_baseline_substitution()]
+    energy_list = range(3, 10, 1)
+    base_substitution = config_base.get_baseline_substitution()
+    sub_list = []
+    for energy in energy_list:
+        sub_list.append(copy.deepcopy(base_substitution))
+        sub_list[-1]["__energy__"] = energy
+    return sub_list
 
 class Config(config_base.Config):
     def __init__(self):
         super(Config, self).__init__()
         self.run_control = {
-            "find_closed_orbits":True,
+            "find_closed_orbits":False,
             "find_tune":False,
             "find_da":False,
             "find_rf_parameters":False,
+            "find_fixed_frequency_rf":True,
             "find_bump_parameters":False,
             "track_beam":False,
             "track_bump":False,
@@ -33,5 +41,6 @@ class Config(config_base.Config):
             "run_dir":"tmp/find_closed_orbits/",
             "probe_files":"RINGPROBE*.loss",
         }
+        self.substitution_list = get_substitution_list()
 
 

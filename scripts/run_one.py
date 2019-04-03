@@ -11,6 +11,7 @@ import find_closed_orbits
 import find_tune
 import find_da
 import find_rf_parameters
+import find_fixed_frequency_rf
 import find_bump_parameters
 import track_bump
 import track_beam
@@ -59,6 +60,7 @@ def main():
         find_da.main(config)
     if config.run_control["track_beam"]:
         track_beam.main(config)
-
+    if config.run_control["find_fixed_frequency_rf"]:
+        find_fixed_frequency_rf.main(config)
 if __name__ == "__main__":
     main()

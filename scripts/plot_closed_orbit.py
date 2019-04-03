@@ -25,6 +25,7 @@ def plot_closed_orbit(data, co_axis, plot_dir):
         y_list = [item["hits"][0][co_axis] for item in data]
         y_list = [y*metres for y in y_list]
         canvas = common.make_root_canvas("closed orbit vs "+x_name)
+        x_name += utilities.sub_to_units(key)
         hist, graph = common.make_root_graph("closed orbit", x_list, x_name, y_list, "Radial position [m]")
         hist.Draw()
         graph.SetMarkerStyle(4)
@@ -34,7 +35,7 @@ def plot_closed_orbit(data, co_axis, plot_dir):
             canvas.Print(plot_dir+"/"+co_axis+"_closed_orbit."+format)
 
 def main():
-    for file_name in glob.glob("output/triplet_scan/find_closed*"):
+    for file_name in glob.glob("output/rogers_hack/find_closed_orbit.out"):
         plot_dir = os.path.split(file_name)[0]
         print file_name
         data = load_file(file_name)
