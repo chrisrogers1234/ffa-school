@@ -24,7 +24,7 @@ class Config(config.Config):
         self.run_control = {
             "find_closed_orbits":True,
             "find_tune":True,
-            "find_da":True,
+            "find_da":False,
             "find_rf_parameters":False,
             "find_bump_parameters":False,
             "track_beam":False,

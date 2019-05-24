@@ -7,7 +7,7 @@ import time
 import xboa.common as common
 from xboa.hit import Hit
 from opal_tracking import OpalTracking
-import utilities
+from utils import utilities
 
 class DAFinder(object):
     def __init__(self, config):

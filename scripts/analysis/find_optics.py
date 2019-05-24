@@ -14,7 +14,7 @@ from opal_tracking import OpalTracking
 import xboa.common as common
 from xboa.hit import Hit
 
-import utilities
+from utils import utilities
 
 class Optics(object):
     def __init__(self, config):

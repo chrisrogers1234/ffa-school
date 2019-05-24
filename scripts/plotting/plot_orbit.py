@@ -7,8 +7,10 @@ import sys
 import copy
 import math
 import numpy
-import utilities
+from utils import utilities
 import plot_dump_fields
+
+MASS = 938.2720813
 
 try:
     import ROOT
@@ -39,9 +41,15 @@ def r_phi_track_file(data):
     data = copy.deepcopy(data)
     data["r"] = range(len(data["x"]))
     data["phi"] = range(len(data["x"]))
+    data["pr"] = range(len(data["x"]))
+    data["pphi"] = range(len(data["x"]))
     for i in range(len(data["r"])):
         data["r"][i] = (data["x"][i]**2+data["y"][i]**2.)**0.5
-        data["phi"][i] = math.degrees(math.atan2(data["y"][i], data["x"][i]))
+        phi = math.atan2(data["y"][i], data["x"][i])
+        data["phi"][i] = math.degrees(phi)
+        p = (data["px"][i]**2+data["py"][i]**2)**0.5
+        data["pr"][i] = p*math.sin(phi)
+        data["pphi"][i] = p*math.cos(phi)
     return data
 
 def parse_file(file_name, heading, types):
@@ -70,6 +78,9 @@ def parse_track_file(filename):
     heading = ["id", "x", "px", "y", "py", "z", "pz"]#, "bx", "by", "bz", "ex", "ey", "ez"]
     types = [str]+[float]*(len(heading)-1)
     data = parse_file(file_name, heading, types)
+    data["px"] = [px*MASS for px in data["px"]]
+    data["py"] = [py*MASS for py in data["py"]]
+        
     data = r_phi_track_file(data)
     return data
 
@@ -367,13 +378,26 @@ def plot_cartesian(output_dir, opal_run_dir, step_list):
     for format in ["png"]:
         canvas.Print(output_dir+"closed_orbit_cartesian_bphi."+format)
 
+def print_track(tgt_phi, step_list_of_lists):
+    for step_list in step_list_of_lists:
+        for i, phi in enumerate(step_list['phi']):
+            if phi > tgt_phi:
+                break
+        print "step list item", i
+        for key in sorted(step_list):
+            print "    ", key, step_list[key][i]
+        print step_list['pr'][i]**2+step_list['pphi'][i]**2
+        print step_list['px'][i]**2+step_list['py'][i]**2
+        print
+
 def main(output_dir, run_dir, run_file_list):
     output_dir += "/"
     opal_run_dir = output_dir+run_dir
     step_list_of_lists = []
     for run_file in run_file_list:
         step_list_of_lists.append(parse_track_file(opal_run_dir+run_file))
-    plot_cylindrical(output_dir, opal_run_dir, step_list_of_lists)
+    #plot_cylindrical(output_dir, opal_run_dir, step_list_of_lists)
+    print_track(0.1*360./15, step_list_of_lists)
     return
     #try:
     #    plot_zoom(output_dir, opal_run_dir, step_list)

@@ -17,8 +17,8 @@ from xboa.algorithms.closed_orbit import EllipseClosedOrbitFinder
 
 import ROOT
 
-import plot_orbit
-import utilities
+import plotting.plot_orbit
+from utils import utilities
 
 CONFIG = None
 OUT_DIR = None

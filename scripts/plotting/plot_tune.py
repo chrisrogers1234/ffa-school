@@ -7,7 +7,7 @@ import xboa.common
 import numpy
 import ROOT
 
-import utilities
+from utils import utilities
 
 ROOT_OBJECTS = []
 
@@ -270,7 +270,7 @@ def plot_data_2d(data, tune_axis, plot_dir):
 units = {"energy":"MeV",}
 
 def main():
-    for file_name in glob.glob("output/rogers_hack/find_tune"):
+    for file_name in glob.glob("output/baseline_energy_scan_2/find_tune"):
         plot_dir = os.path.split(file_name)[0]+"/plot_tune/"
         if os.path.exists(plot_dir):
             shutil.rmtree(plot_dir)

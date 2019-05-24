@@ -16,8 +16,8 @@ from xboa.hit import Hit
 sys.path.insert(1, "scripts")
 from opal_tracking import OpalTracking
 import find_closed_orbits
-import plot_dump_fields
-import utilities
+from plotting import plot_dump_fields
+from utils import utilities
 
 class FindRFParameters(object):
     def __init__(self, config):

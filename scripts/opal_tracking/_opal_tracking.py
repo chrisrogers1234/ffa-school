@@ -223,9 +223,12 @@ class OpalTracking(TrackingBase):
             print "Ran for", time.time() - old_time, "s"
         # returncode 1 -> particle fell out of the accelerator
         if proc.returncode != 0 and proc.returncode != 1:
-            raise RuntimeError("OPAL quit with non-zero error code "+\
-                               str(proc.returncode)+". Review the log file: "+\
-                               os.path.join(os.getcwd(), self.log_filename))
+            try:
+                raise RuntimeError("OPAL quit with non-zero error code "+\
+                                   str(proc.returncode)+". Review the log file: "+\
+                                   os.path.join(os.getcwd(), self.log_filename))
+            except:
+                sys.excepthook(*sys.exc_info())
 
     def _remove_duplicate_stations(self, list_of_hit_dicts):
         if self.allow_duplicate_station:

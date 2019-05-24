@@ -9,7 +9,7 @@ import ROOT
 import xboa.common
 from xboa.hit import Hit
 
-import utilities
+from utils import utilities
 
 from fixed_frequency_rf.longitudinal_study import ToyLongitudinal
 

@@ -12,6 +12,7 @@ def get_baseline_substitution():
         "__beamfile__":'disttest.dat',
         "__current__":1.6e-19,
         "__n_events__":1,
+        "__lattice_phi_offset__":0.0,
         # tracking
         "__step_size__":1., # mm
         "__n_turns__":2.1,
@@ -197,7 +198,7 @@ class Config(object):
         self.run_control = {
             "find_closed_orbits":False,
             "find_tune":True,
-            "find_da":True,
+            "find_da":False,
             "find_rf_parameters":False,
             "find_bump_parameters":False,
             "track_beam":False,

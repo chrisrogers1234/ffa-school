@@ -8,7 +8,7 @@ from xboa.hit import Hit
 from opal_tracking import OpalTracking
 from opal_tracking import TunesAnalysis
 from opal_tracking import PhaseSpacePlots
-import utilities
+from utils import utilities
 
 class TrackBeam(object):
     def __init__(self, config):

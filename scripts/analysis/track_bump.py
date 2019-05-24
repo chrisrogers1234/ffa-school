@@ -16,7 +16,7 @@ import xboa.common
 from xboa.hit import Hit
 sys.path.insert(1, "scripts")
 from opal_tracking import OpalTracking
-import utilities
+from utils import utilities
 
 class TrackBump(object):
     def __init__(self, config):

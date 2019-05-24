@@ -16,7 +16,7 @@ from xboa.hit import Hit
 from xboa.algorithms.tune import FFTTuneFinder
 from xboa.algorithms.tune import DPhiTuneFinder
 
-import utilities
+from utils import utilities
 
 # CHECK - why is there a sign error?
 
