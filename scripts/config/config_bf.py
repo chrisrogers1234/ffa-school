@@ -1,7 +1,7 @@
 import os
 import json
 
-import config_reference
+from . import config_reference
 
 # 0.21625, 0.21833
 def get_substitution_list():
@@ -10,7 +10,7 @@ def get_substitution_list():
         sub = config_reference.get_baseline_substitution()
         sub["__b_f__"] = 5.8+0.2*index
         substitution_list.append(sub)
-    print json.dumps(substitution_list, indent=2)
+    print(json.dumps(substitution_list, indent=2))
     return substitution_list
 
 class Config(config_reference.Config):

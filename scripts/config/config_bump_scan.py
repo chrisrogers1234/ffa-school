@@ -2,7 +2,7 @@ import copy
 import os
 import json
 
-import config_bump as config
+from . import config_bump as config
 DIR = config.DIR
 
 # 0.21625, 0.21833
@@ -45,5 +45,5 @@ class Config(config.Config):
         }
         self.find_da["required_n_hits"] = 50
         self.substitution_list = get_substitution_list()
-        print "Running", len(self.substitution_list), "substitutions"
+        print("Running", len(self.substitution_list), "substitutions")
 

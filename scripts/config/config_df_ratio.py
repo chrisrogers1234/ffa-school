@@ -1,7 +1,7 @@
 import os
 import json
 
-import config_base
+from . import config_base
 
 def get_substitution_list():
     substitution_list = []
@@ -9,7 +9,7 @@ def get_substitution_list():
         sub = config_base.get_baseline_substitution()
         sub["__df_ratio__"] = -(0.3+0.02*index)
         substitution_list.append(sub)
-    print json.dumps(substitution_list, indent=2)
+    print(json.dumps(substitution_list, indent=2))
     return substitution_list
 
 class Config(config_base.Config):

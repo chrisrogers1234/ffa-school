@@ -67,19 +67,19 @@ class Tune(object):
             if self.row != None and i not in self.row:
                 continue
             if len(closed_orbit["hits"]) == 0:
-                print "Error - no closed orbit"
+                print("Error - no closed orbit")
                 continue
             index += 1
             if index >= self.config.find_tune["root_batch"]:
                 ROOT.gROOT.SetBatch(True)
             subs = closed_orbit["substitutions"]
-            for item, key in self.config.find_tune["subs_overrides"].iteritems():
+            for item, key in self.config.find_tune["subs_overrides"].items():
                 subs[item] = key
 
-            print "Finding tune with", 
+            print("Finding tune with", end=' ') 
             for key in sorted(subs.keys()):
-                print utilities.sub_to_name(key), subs[key],
-            print
+                print(utilities.sub_to_name(key), subs[key], end=' ')
+            print()
             tune_info = {"substitutions":subs}
             for axis1, axis2, delta1, delta2 in [("x", "px", self.delta_x, 0.),
                                                  ("y", "py", self.delta_y, 0.)]:
@@ -104,8 +104,8 @@ class Tune(object):
                 except RuntimeError:
                     sys.excepthook(*sys.exc_info())
                 for track_index, track in enumerate(tracking.last):
-                    print 'Track', track_index, 'of', len(tracking.last), \
-                          'with', len(track), 'hits'
+                    print('Track', track_index, 'of', len(tracking.last), \
+                          'with', len(track), 'hits')
                     #for hit in track:
                     #    print '    ', hit['t'], 'polar:', math.atan2(hit['y'], \
                     #          hit['x']), (hit['y']**2+hit['x']**2)**0.5, \
@@ -116,10 +116,10 @@ class Tune(object):
                     tune = finder.get_tune(subs["__n_turns__"]/10.)
                 except:
                     tune = 0.
-                print '  Found', len(finder.dphi), 'dphi elements with tune', tune, "+/-", finder.tune_error
+                print('  Found', len(finder.dphi), 'dphi elements with tune', tune, "+/-", finder.tune_error)
                 tune_info[axis1+"_tune"] = tune
                 tune_info[axis1+"_tune_rms"] = finder.tune_error
-                tune_info[axis1+"_signal"] = zip(finder.u, finder.up)
+                tune_info[axis1+"_signal"] = list(zip(finder.u, finder.up))
                 tune_info[axis1+"_dphi"] = finder.dphi
                 tune_info[axis1+"_n_cells"] = len(finder.dphi)
                 canvas, hist, graph = finder.plot_phase_space()
@@ -137,15 +137,15 @@ class Tune(object):
                     u_chol = finder.point_circles[i][0]
                     up_chol = finder.point_circles[i][1]
                     phi = math.atan2(up_chol, u_chol)
-                    print str(i).ljust(4),  str(round(t, 4)).rjust(8), "...", \
+                    print(str(i).ljust(4),  str(round(t, 4)).rjust(8), "...", \
                           str(round(u, 4)).rjust(8), str(round(up, 4)).rjust(8), "...", \
                           str(round(u_chol, 4)).rjust(8), str(round(up_chol, 4)).rjust(8), "...", \
-                          str(round(phi, 4)).rjust(8), str(round(dphi, 4)).rjust(8)
+                          str(round(phi, 4)).rjust(8), str(round(dphi, 4)).rjust(8))
 
             for key in sorted(tune_info.keys()):
                 if "signal" not in key and "dphi" not in key:
-                    print "   ", key, tune_info[key]
-            print >> fout, json.dumps(tune_info)
+                    print("   ", key, tune_info[key])
+            print(json.dumps(tune_info), file=fout)
             fout.flush()
         os.chdir(cwd)
 

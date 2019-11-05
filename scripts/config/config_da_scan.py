@@ -1,7 +1,7 @@
 import os
 import json
 
-import config_base
+from . import config_base
 
 class Config(config_base.Config):
     find_da = {

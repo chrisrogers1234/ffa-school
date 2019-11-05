@@ -2,7 +2,7 @@ import copy
 import os
 import json
 
-import config_triplet
+from . import config_triplet
 
 # 0.21625, 0.21833
 def get_substitution_list():
@@ -11,7 +11,7 @@ def get_substitution_list():
     for index1 in range(5):
         sub["__field_index__"] = 4-0.5*index1
         substitution_list.append(copy.deepcopy(sub))
-    print json.dumps(substitution_list, indent=2)
+    print(json.dumps(substitution_list, indent=2))
     return substitution_list
 
 class Config(config_triplet.Config):

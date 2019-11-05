@@ -81,7 +81,7 @@ def get_substitutions_axis(data):
     axis_candidates = {}
     for item in data:
         subs = item['substitutions']
-        for key in subs.keys():
+        for key in list(subs.keys()):
             if subs[key] != subs_ref[key]:
                 try:
                     float(subs[key])
@@ -89,11 +89,11 @@ def get_substitutions_axis(data):
                 except TypeError:
                     continue
     if axis_candidates == {}:
-        print "All of", len(data), "items look the same - nothing to plot"
-        print "First:"
-        print " ", data[0]['substitutions']
-        print "Last:"
-        print " ", data[-1]['substitutions']
+        print("All of", len(data), "items look the same - nothing to plot")
+        print("First:")
+        print(" ", data[0]['substitutions'])
+        print("Last:")
+        print(" ", data[-1]['substitutions'])
     for item in data:
         for key in axis_candidates:
             axis_candidates[key].append(item['substitutions'][key])

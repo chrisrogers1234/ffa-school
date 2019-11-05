@@ -12,13 +12,13 @@ import utilities
 
 def load_file(file_name):
     fin = open(file_name)
-    print "Loading", file_name,
+    print("Loading", file_name, end=' ')
     sys.stdout.flush()
     data_out = json.loads(fin.read())
     if len(data_out) == 0:
-        print " empty file, abort"
+        print(" empty file, abort")
         sys.exit(1)
-    print " done"
+    print(" done")
     return data_out
 
 def plot_score(data, plot_dir, foil_probe):
@@ -28,7 +28,7 @@ def plot_score(data, plot_dir, foil_probe):
     plot_dir - directory to which files are written
     foil_probe - element in the "tracking output" list which contains the foil probe
     """
-    print "\nclosed orbit with foil probe", foil_probe
+    print("\nclosed orbit with foil probe", foil_probe)
     metres = 1e-3
     bump_position = []
     bump_score = []
@@ -61,7 +61,7 @@ def plot_score(data, plot_dir, foil_probe):
 
 
 def plot_fields(data, plot_dir, foil_probe):
-    print "\nfield",
+    print("\nfield", end=' ')
     bump_fields = [[], [], [], []]
     bump_position = []
     for bump_run in data:
@@ -110,7 +110,7 @@ def plot_closed_orbit(data, co_axis, plot_dir, foil_probe):
     plot_dir - directory to which files are written
     foil_probe - element in the "tracking output" list which contains the foil probe
     """
-    print "\nclosed orbit with foil probe", foil_probe
+    print("\nclosed orbit with foil probe", foil_probe)
     if co_axis == "x":
         ip = 1 # position index
         im = 2 # momentum index
@@ -154,4 +154,4 @@ def main():
 
 if __name__ == "__main__":
     main()
-    print "Done"
+    print("Done")

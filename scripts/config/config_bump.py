@@ -2,7 +2,7 @@ import copy
 import os
 import json
 
-import config_base as config
+from . import config_base as config
 DIR = "bump_design_outer-radius_-1_0_1_2_painting"
 
 # 0.21625, 0.21833
@@ -36,9 +36,9 @@ def get_substitution_list():
     #    my_sub = copy.deepcopy(sub)
     #    my_sub["__bump_fringe__"] = bump_fringe # angular tilt of bump cavity
     #    sub_list.append(my_sub)
-    print "Generated", len(sub_list), "subs:"
-    print "    angles: ", [format(my_sub["__bump_angle__"], "6.4f") for my_sub in sub_list]
-    print "    fringes:", [format(my_sub["__bump_fringe__"], "6.4f") for my_sub in sub_list]
+    print("Generated", len(sub_list), "subs:")
+    print("    angles: ", [format(my_sub["__bump_angle__"], "6.4f") for my_sub in sub_list])
+    print("    fringes:", [format(my_sub["__bump_fringe__"], "6.4f") for my_sub in sub_list])
     return sub_list
 
 class Config(config.Config):
@@ -72,7 +72,7 @@ class Config(config.Config):
         self.find_bump_parameters["ignore_stations"]  = [4, 5, 16]
 
         # list of bump fields to consider, based on orbit initial trajectory (urk)
-        self.track_bump["bump_list"] = [[-20.*i/5+4018.0-4042.1, -8.6771+8.471] for i in reversed(range(2))]
+        self.track_bump["bump_list"] = [[-20.*i/5+4018.0-4042.1, -8.6771+8.471] for i in reversed(list(range(2)))]
         # this is the bump_list element corresponding to the centroid of the injected
         # beam (i.e. the position of the newly inserted painted beam)
         self.track_bump["injection_orbit"] = -1

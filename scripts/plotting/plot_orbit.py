@@ -8,14 +8,14 @@ import copy
 import math
 import numpy
 from utils import utilities
-import plot_dump_fields
+import plotting.plot_dump_fields as plot_dump_fields
 
 MASS = 938.2720813
 
 try:
     import ROOT
 except ImportError:
-    print "You need to install PyROOT to run this example."
+    print("You need to install PyROOT to run this example.")
 
 class RootObjects:
     histograms = []
@@ -39,10 +39,10 @@ class Colors:
 
 def r_phi_track_file(data):
     data = copy.deepcopy(data)
-    data["r"] = range(len(data["x"]))
-    data["phi"] = range(len(data["x"]))
-    data["pr"] = range(len(data["x"]))
-    data["pphi"] = range(len(data["x"]))
+    data["r"] = list(range(len(data["x"])))
+    data["phi"] = list(range(len(data["x"])))
+    data["pr"] = list(range(len(data["x"])))
+    data["pphi"] = list(range(len(data["x"])))
     for i in range(len(data["r"])):
         data["r"][i] = (data["x"][i]**2+data["y"][i]**2.)**0.5
         phi = math.atan2(data["y"][i], data["x"][i])
@@ -64,13 +64,13 @@ def parse_file(file_name, heading, types):
     while line != "":
         words = line.split()
         if len(words) != len(heading):
-            print "Line\n  "+line+"\nmismatched to heading\n  "+str(heading)+"\nin parse_file "+file_name
+            print("Line\n  "+line+"\nmismatched to heading\n  "+str(heading)+"\nin parse_file "+file_name)
         else:
             words = [types[i](x) for i, x in enumerate(words)]
             for i, item in enumerate(heading):
                 data[item].append(words[i])
         line = fin.readline()[:-1]
-    print "Got data from file "+file_name
+    print("Got data from file "+file_name)
     return data
 
 def parse_track_file(filename):
@@ -138,11 +138,11 @@ def plot_r_phi_projection(step_list, canvas = None):
     else:
         canvas.cd()
     graph = ROOT.TGraph(len(step_list))
-    points = zip(step_list["phi"], step_list["r"])
+    points = list(zip(step_list["phi"], step_list["r"]))
     points = sorted(points)
     for i in range(len(step_list["r"])):
         graph.SetPoint(i, points[i][0], points[i][1])
-    graph.SetMarkerColor(Colors.next())
+    graph.SetMarkerColor(next(Colors))
     graph.Draw("p")
     canvas.Update()
     RootObjects.canvases.append(canvas)
@@ -174,8 +174,8 @@ def step_statistics(step_list):
         delta_y = step_list["y"][i+1]-step_list["y"][i]
         delta_z = step_list["z"][i+1]-step_list["z"][i]
         delta_r_list.append((delta_x**2+delta_y**2+delta_z**2)**0.5)
-    print len(step_list), "steps with mean size:", numpy.mean(delta_r_list),
-    print "and RMS:", numpy.std(delta_r_list)
+    print(len(step_list), "steps with mean size:", numpy.mean(delta_r_list), end=' ')
+    print("and RMS:", numpy.std(delta_r_list))
 
 def plot_beam_pipe(inner_radius, outer_radius, n_periods, canvas=None):
     n_steps = 361 # number of azimuthal steps
@@ -349,7 +349,7 @@ def plot_cartesian(output_dir, opal_run_dir, step_list):
     #plot_elements_xy(opal_run_dir+"log", canvas)
     for format in ["png"]:
         canvas.Print(output_dir+"closed_orbit_plan_bz."+format)
-
+    return
     canvas = field_plot.plot_dump_fields("x", "y", "bx")
     canvas, axes, graph = plot_x_y_projection(step_list, canvas)
     plot_beam_pipe(inner_radius, outer_radius, ncells, canvas)
@@ -383,12 +383,12 @@ def print_track(tgt_phi, step_list_of_lists):
         for i, phi in enumerate(step_list['phi']):
             if phi > tgt_phi:
                 break
-        print "step list item", i
+        print("step list item", i)
         for key in sorted(step_list):
-            print "    ", key, step_list[key][i]
-        print step_list['pr'][i]**2+step_list['pphi'][i]**2
-        print step_list['px'][i]**2+step_list['py'][i]**2
-        print
+            print("    ", key, step_list[key][i])
+        print(step_list['pr'][i]**2+step_list['pphi'][i]**2)
+        print(step_list['px'][i]**2+step_list['py'][i]**2)
+        print()
 
 def main(output_dir, run_dir, run_file_list):
     output_dir += "/"
@@ -397,18 +397,17 @@ def main(output_dir, run_dir, run_file_list):
     for run_file in run_file_list:
         step_list_of_lists.append(parse_track_file(opal_run_dir+run_file))
     #plot_cylindrical(output_dir, opal_run_dir, step_list_of_lists)
-    print_track(0.1*360./15, step_list_of_lists)
-    return
+    #print_track(0.1*360./15, step_list_of_lists)
     #try:
     #    plot_zoom(output_dir, opal_run_dir, step_list)
     #except Exception:
     #    sys.excepthook(*sys.exc_info())
-    #try:
-    #    plot_cartesian(output_dir, opal_run_dir, step_list)
-    #except Exception:
-    #    sys.excepthook(*sys.exc_info())
+    try:
+        plot_cartesian(output_dir, opal_run_dir, step_list_of_lists[0])
+    except Exception:
+        sys.excepthook(*sys.exc_info())
 
-    step_statistics(step_list)
+    step_statistics(step_list_of_lists[0])
 
 if __name__ == "__main__":
     utilities.setup_gstyle()
@@ -416,4 +415,5 @@ if __name__ == "__main__":
     run_dir = ""
     run_file_list = [os.path.split(arg)[1] for arg in sys.argv[1:]]
     main(output_dir, run_dir, run_file_list)
+    input()
 

@@ -26,22 +26,22 @@ def clean_tune_data(data, verbose=False):
         mean = numpy.mean(data_tmp)
         std = numpy.std(data_tmp)
         if verbose:
-            print len(my_data), mean, std, abs(std - old_std)/std, abs(mean - old_mean)/std
+            print(len(my_data), mean, std, abs(std - old_std)/std, abs(mean - old_mean)/std)
         if verbose:
-            print keep_going
+            print(keep_going)
         old_std = std
         old_mean = mean
         my_data = [(abs(value - mean), value) for delta, value in my_data]
         my_data = sorted(my_data)
         if verbose:
-            print "   ", my_data[-3:]
+            print("   ", my_data[-3:])
         keep_going = len(my_data) > 2 and my_data[-1][0] > 5*std
         my_data = my_data[:-1]
     my_data = [item[1] for item in my_data]
     if verbose:
-        print "DATA IN",  sorted(data)
-        print "DATA OUT", my_data
-        print "MEAN", numpy.mean(my_data)
+        print("DATA IN",  sorted(data))
+        print("DATA OUT", my_data)
+        print("MEAN", numpy.mean(my_data))
     return my_data
 
 def get_axes(axis_key, group_dict, tune_axis):
@@ -86,7 +86,7 @@ def make_root_graph_errors(name, x_values, y_values, y_errors):
     for i in range(n_points):
         graph.SetPoint(i, sorted_values[i][0], sorted_values[i][1])
         graph.SetPointError(i, 0., 0.)#sorted_values[i][2])
-        print sorted_values[i]
+        print(sorted_values[i])
     graph.SetName(name)
     return graph
 
@@ -99,10 +99,10 @@ def do_one_1d_plot(axis_key, group_dict, plot_dir, tune_axis):
         item = group_dict[group_key]
         graph_x = make_root_graph_errors(group_key+" #nu_{x}", item['axes'][axis_key], item['x_tune'], item['x_tune_err'])
         graph_y = make_root_graph_errors(group_key+" #nu_{y}", item['axes'][axis_key], item['y_tune'], item['y_tune_err'])
-        print "For group", group_key, "found", len(item['axes'][axis_key]), "items"
-        print "   ", axis_key, item['axes'][axis_key]
-        print "    x tune", item['x_tune']
-        print "    y tune", item['y_tune']
+        print("For group", group_key, "found", len(item['axes'][axis_key]), "items")
+        print("   ", axis_key, item['axes'][axis_key])
+        print("    x tune", item['x_tune'])
+        print("    y tune", item['y_tune'])
         graph_x.SetMarkerStyle(24)
         graph_x.SetMarkerColor(x_color[0])
         graph_y.SetMarkerStyle(26)
@@ -167,7 +167,7 @@ def get_groups(data, group_axis):
     for key in tmp_group_dict:
         new_key = utilities.sub_to_name(group_axis)+" "+format(key, "3.3g")
         group_dict[new_key] = {'item_list':tmp_group_dict[key]}
-        print new_key, ":", group_dict[new_key]
+        print(new_key, ":", group_dict[new_key])
     return group_dict
 
 def plot_data_1d(data, tune_axis, plot_dir, group_axis = None, cell_conversion = 1, skip_length_one = True):
@@ -186,7 +186,7 @@ def plot_data_1d(data, tune_axis, plot_dir, group_axis = None, cell_conversion =
     if group_axis in axis_candidates:
         del axis_candidates[group_axis]
     group_dict = get_groups(data, group_axis)
-    group_key_list = group_dict.keys()
+    group_key_list = list(group_dict.keys())
     for group_key in group_key_list:
         my_axes = dict([(key, []) for key in axis_candidates])
         x_signal, y_signal = [], []
@@ -199,8 +199,8 @@ def plot_data_1d(data, tune_axis, plot_dir, group_axis = None, cell_conversion =
             x_dphi = clean_tune_data(item['x_dphi'], verbose)
             y_dphi = clean_tune_data(item['y_dphi'], verbose)
             if verbose:
-                print "X DPHI", sorted(x_dphi)
-                print "Y DPHI", sorted(y_dphi)
+                print("X DPHI", sorted(x_dphi))
+                print("Y DPHI", sorted(y_dphi))
             x_tune.append(numpy.mean(x_dphi))
             y_tune.append(numpy.mean(y_dphi))
             x_signal.append(item['x_signal'])
@@ -222,7 +222,7 @@ def plot_data_1d(data, tune_axis, plot_dir, group_axis = None, cell_conversion =
                 y_tune = [nu*cell_conversion - math.floor(nu*cell_conversion) for nu in y_tune]
         if len(x_tune) == 1 and skip_length_one:
             del group_dict[group_key]
-            print "Removed", group_key, "because length was 1"
+            print("Removed", group_key, "because length was 1")
             continue
 
         group_dict[group_key]['x_tune'] = x_tune
@@ -247,8 +247,8 @@ def plot_tune_network(self, canvas):
 def plot_data_2d(data, tune_axis, plot_dir):
     x_tune = [item['x_tune'] for item in data]
     y_tune = [item['y_tune'] for item in data]
-    print "X Tunes", x_tune
-    print "Y Tunes", y_tune
+    print("X Tunes", x_tune)
+    print("Y Tunes", y_tune)
     x_name = "Varying "
     axis_candidates = utilities.get_substitutions_axis(data)
     for key in axis_candidates:
@@ -284,4 +284,4 @@ def main():
 
 if __name__ == "__main__":
     main()
-    raw_input("Press <CR> to end")
+    input("Press <CR> to end")

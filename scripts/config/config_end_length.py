@@ -2,7 +2,7 @@ import os
 import json
 import math
 
-import config_base
+from . import config_base
 
 def get_end(theta):
     return 1.0*(1.5/math.cos(math.radians(41))/2.)/theta
@@ -16,7 +16,7 @@ def get_substitution_list():
         sub["__d_end_length__"] = d_end_length*end_length/5.
         sub["__f_end_length__"] = f_end_length*end_length/5.
         substitution_list.append(sub)
-    print json.dumps(substitution_list, indent=2)
+    print(json.dumps(substitution_list, indent=2))
     return substitution_list
 
 class Config(config_base.Config):

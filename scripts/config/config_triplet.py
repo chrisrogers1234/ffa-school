@@ -1,6 +1,6 @@
 import math
 import os
-import config_base
+from . import config_base
 
 def get_baseline_substitution():
     baseline = {
@@ -103,7 +103,7 @@ class Config(object):
         "sigma_pz":1.e-9,
         "sigma_z":1.e-9,
         "do_track":False,
-        "single_turn_plots":range(0, 101, 1),
+        "single_turn_plots":list(range(0, 101, 1)),
         "min_radius":100.,
         "max_delta_p":50.,
         "plot_events":[1, 2],

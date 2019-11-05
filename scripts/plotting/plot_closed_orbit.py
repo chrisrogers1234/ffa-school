@@ -15,7 +15,7 @@ def load_file(file_name):
     return data_out
 
 def plot_closed_orbit(data, co_axis, plot_dir):
-    print "\nclosed orbit",
+    print("\nclosed orbit", end=' ')
     axis_candidates = utilities.get_substitutions_axis(data)
     metres = 1e-3
     for key in axis_candidates:
@@ -37,7 +37,7 @@ def plot_closed_orbit(data, co_axis, plot_dir):
 def main():
     for file_name in glob.glob("output/rogers_hack/find_closed_orbit.out"):
         plot_dir = os.path.split(file_name)[0]
-        print file_name
+        print(file_name)
         data = load_file(file_name)
         if len(data) == 0:
             continue
@@ -46,4 +46,4 @@ def main():
 
 if __name__ == "__main__":
     main()
-    raw_input("Done")
+    input("Done")

@@ -2,13 +2,13 @@ import math
 import os
 import copy
 
-import config_base
+from . import config_base
 
 DIR = "fixed_frequency_rf/"
 
 
 def get_substitution_list():
-    energy_list = range(3, 10, 1)
+    energy_list = list(range(3, 10, 1))
     base_substitution = config_base.get_baseline_substitution()
     sub_list = []
     for energy in energy_list:

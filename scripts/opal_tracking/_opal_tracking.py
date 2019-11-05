@@ -185,42 +185,42 @@ class OpalTracking(TrackingBase):
 
     def _tracking(self, list_of_hits):
         if self.verbose:
-            print "Tracking using logfile ", self.log_filename
+            print("Tracking using logfile ", self.log_filename)
         open(self.lattice_filename).close() # check that lattice exists
         m, GeV = common.units["m"], common.units["GeV"]
         p_mass = common.pdg_pid_to_mass[2212]
         fout = open(self.beam_filename, "w")
-        print >> fout, len(list_of_hits)
+        print(len(list_of_hits), file=fout)
         for i, hit in enumerate(list_of_hits):
             keys = ['x', 'y', 'z', 'px', 'py', 'pz', 'kinetic_energy']
             if self.verbose:
-                print '           ',
+                print('           ', end=' ')
                 for key in keys:
-                    print key.ljust(8),
+                    print(key.ljust(8), end=' ')
                 if i < 1 or i == len(list_of_hits)-1:
-                    print '\n    hit ...',
+                    print('\n    hit ...', end=' ')
                     for key in keys:
-                        print str(round(hit[key], 3)).ljust(8),
-                    print '\n    ref ...',
+                        print(str(round(hit[key], 3)).ljust(8), end=' ')
+                    print('\n    ref ...', end=' ')
                     for key in 'x', 'y', 'z', 'px', 'py', 'pz', 'kinetic_energy':
-                        print str(round(self.ref[key], 3)).ljust(8),
-                    print
+                        print(str(round(self.ref[key], 3)).ljust(8), end=' ')
+                    print()
                 if i == 1 and len(list_of_hits) > 2:
-                    print "<", len(list_of_hits)-2, " more hits>"
+                    print("<", len(list_of_hits)-2, " more hits>")
             x = (hit["x"]-self.ref["x"])/m
             y = (hit["y"]-self.ref["y"])/m
             z = (hit["z"]-self.ref["z"])/m
             px = (hit["px"]-self.ref["px"])/p_mass
             py = (hit["py"]-self.ref["py"])/p_mass
             pz = (hit["pz"]-self.ref["pz"])/p_mass
-            print >> fout, x, px, z, pz, y, py
+            print(x, px, z, pz, y, py, file=fout)
         fout.close()
         self.cleanup()
         old_time = time.time()
         proc = self.open_subprocess()
         proc.wait()
         if self.verbose:
-            print "Ran for", time.time() - old_time, "s"
+            print("Ran for", time.time() - old_time, "s")
         # returncode 1 -> particle fell out of the accelerator
         if proc.returncode != 0 and proc.returncode != 1:
             try:
@@ -236,7 +236,7 @@ class OpalTracking(TrackingBase):
         dict_of_hit_dicts = {} # temp mapping of station to hit_dict
         for hit_dict in list_of_hit_dicts:
             dict_of_hit_dicts[station] = hit_dict # overwrites if a duplicate
-        return dict_of_hit_dicts.values() # list of hit dicts
+        return list(dict_of_hit_dicts.values()) # list of hit dicts
 
     def _read_probes(self, pass_through_analysis):
         # loop over files in the glob, read events and sort by event number
