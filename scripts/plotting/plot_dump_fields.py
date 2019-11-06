@@ -3,7 +3,8 @@ import os
 import math
 import glob
 import numpy.fft
-import ROOT
+import matplotlib
+import xboa.common.matplotlib_wrapper as matplotlib_wrapper
 
 class PlotDumpFields(object):
     def __init__(self, file_name, is_em_field = False):
@@ -21,59 +22,15 @@ class PlotDumpFields(object):
         self.load_dump_fields()
         print(self.keys)
         if "r" in self.keys:
-            canvas_xy = self.plot_dump_fields("phi", "r", "bz")
+            fig_index = self.plot_dump_fields("phi", "r", "bz")
         else:
-            canvas_xy = self.plot_dump_fields("x", "y", "bz")
-            canvas_xy.Print("bz_vs_x-y.png")
-            canvas_xy = self.plot_dump_fields("x", "y", "bx")
-            canvas_xy.Print("bx_vs_x-y.png")
-            canvas_xy = self.plot_dump_fields("x", "y", "by")
-            canvas_xy.Print("by_vs_x-y.png")
-        return canvas_xy
+            fig_index = self.plot_dump_fields("x", "y", "bz")
+            matplotlib.pyplot.savefig("bz_vs_x-y.png")
+            fig_index = self.plot_dump_fields("x", "y", "bx")
+            matplotlib.pyplot.savefig("bx_vs_x-y.png")
+            fig_index = self.plot_dump_fields("x", "y", "by")
+            matplotlib.pyplot.savefig("by_vs_x-y.png")
 
-    def plot_1d(self, cuts, ax1, ax2):
-        value1, value2 = [], []
-        n_points = len(list(self.field_map.values())[0])
-        for i in range(n_points):
-            is_cut = False
-            for cut_key, cut_value in cuts.items():
-                if abs(self.field_map[cut_key][i] - cut_value) > 1e-3:
-                    is_cut = True
-            if is_cut:
-                continue
-            value1.append(self.field_map[ax1][i])
-            value2.append(self.field_map[ax2][i])
-        x_min, x_max = min(value1), max(value1)
-        y_min, y_max = min(value2), max(value2)
-        y_delta = (y_max-y_min)*0.1
-        y_min -= y_delta
-        y_max += y_delta
-        if y_max-y_min < 1e-20 or x_max-x_min < 1e-20:
-            print("x values:", value1)
-            print("y values:", value2)
-            print("x_min:", x_min, "x_max:", x_max, "y_min:", y_min, "y_max:", y_max)
-            raise ValueError("Bad axis range")
-        canvas_1d = ROOT.TCanvas(self.file_name+": "+ax1+" vs "+ax2, ax1+" vs "+ax2)
-        hist = ROOT.TH2D(ax1+" vs "+ax2, ";"+ax1+";"+ax2,
-                         1000, x_min, x_max,
-                         1000, y_min, y_max)
-        hist.SetStats(False)
-        graph = ROOT.TGraph(len(value1))
-        graph.SetLineWidth(2)
-        for i, x in enumerate(value1):
-            y = value2[i]
-            graph.SetPoint(i, x, y)
-        hist.Draw()
-        graph.Draw("SAMEL")
-        self.graph = graph
-        self.canvas = canvas_1d
-        self.x_list = value1
-        self.y_list = value2
-        canvas_1d.Update()
-        self.root_objects.append(canvas_1d)
-        self.root_objects.append(hist)
-        self.root_objects.append(graph)
-        return canvas_1d, hist, graph
 
     def calculate_cylindrical_fields(self):
         n_points = len(self.field_map['bx'])
@@ -145,39 +102,6 @@ class PlotDumpFields(object):
             n_bins = len(bin_list)
         return bin_min, bin_max, n_bins
 
-    def fft_field(self, cuts, field_component, colour=1, canvas = None):
-        import xboa.common
-        print("Doing fft for", field_component, "...", end=' ')
-        sys.stdout.flush()
-        n_points = len(list(self.field_map.values())[0])
-        fft_list = []
-        for i in range(n_points):
-            is_cut = False
-            for cut_key, cut_value in cuts.items():
-                if abs(self.field_map[cut_key][i] - cut_value) > 1e-3:
-                    is_cut = True
-            if is_cut:
-                continue
-            fft_list.append(self.field_map[field_component][i])
-        fft_list = sorted(fft_list)
-        
-        fft = numpy.fft.rfft(fft_list)
-        fft_mag = [numpy.absolute(item) for item in fft]
-        print(fft[:3], "...", fft[-3:])
-        print(fft_mag[:3], "...", fft_mag[-3:])
-        freq = [i*1./len(fft_mag)/2. for i in range(len(fft_mag))]
-        hist, graph = xboa.common.make_root_graph("fft "+field_component, freq, "Frequency", fft, "FFT("+field_component+")")
-        if canvas == None:
-            canvas = xboa.common.make_root_canvas("fft "+field_component)
-            canvas.Draw()
-            hist.Draw()
-        canvas.cd()
-        graph.SetLineColor(colour)
-        graph.Draw("SAMEL")
-        canvas.Update()
-        print("done")
-        return canvas
-
     def get_field_value(self, pos_1, pos_2):
         min_1, max_1, n_1 = self.get_bin_list(var_1)
         min_2, max_2, n_2 = self.get_bin_list(var_2)
@@ -215,128 +139,60 @@ class PlotDumpFields(object):
             field[bin_1][bin_2] = self.field_map[var_3][i]
         return field
 
-    def plot_dump_fields(self, var_1, var_2, var_3):
+    name_dict = {"phi":"#phi [degree]", "r":"r [m]",
+                 "x":"x [m]", "y":"y [m]", "z":"z [m]",
+                 "bx":"B$_{x}$ [T]", "by":"B$_{y}$ [T]", "bz":"B$_{z}$ [T]", 
+                 "br":"B$_{r}$ [T]", "bphi":"B$_{\phi}$ [T]",
+                 }
+
+    def get_norm(self, min_z, max_z, limit=5):
+        min_z = max(-limit, min_z)
+        max_z = min(limit, max_z)
+        divnorm = matplotlib.colors.DivergingNorm(vmin=min_z, vcenter=0, vmax=max_z)
+        return divnorm
+
+    def plot_1d(self, cuts, ax1, ax2, fig_index = None):
+        self.x_list, self.y_list = [], []
+        n_points = len(list(self.field_map.values())[0])
+        for i in range(n_points):
+            is_cut = False
+            for cut_key, cut_value in cuts.items():
+                if abs(self.field_map[cut_key][i] - cut_value) > 1e-3:
+                    is_cut = True
+            if is_cut:
+                continue
+            self.x_list.append(self.field_map[ax1][i])
+            self.y_list.append(self.field_map[ax2][i])
+        fig_index = matplotlib_wrapper.make_graph(self.x_list, ax1,
+                                                  self.y_list, ax2,
+                                                  fig_index = fig_index)
+        return fig_index
+
+    def plot_dump_fields(self, var_1, var_2, var_3, fig_index = None):
         min_1, max_1, n_1 = self.get_bin_list(var_1)
         min_2, max_2, n_2 = self.get_bin_list(var_2)
         min_3, max_3 = min(self.field_map[var_3]), max(self.field_map[var_3])
-        unique_id = str(len(self.root_objects))
-        name = var_3+" vs "+var_1+" and "+var_2+" "+unique_id
-        self.set_z_axis(min_3, max_3)
-        canvas = ROOT.TCanvas(name)
-        name_dict = self.name_dict
-        hist = ROOT.TH2D(name, var_3+";"+name_dict[var_1]+";"+name_dict[var_2], n_1, min_1, max_1, n_2, min_2, max_2)
-        hist.SetStats(False)
-        for i in range(self.n_lines):
-            hist.Fill(self.field_map[var_1][i], self.field_map[var_2][i], self.field_map[var_3][i])
-        hist.Draw("COLZ")
-        canvas.Update()
-        self.root_objects.append(canvas)
-        self.root_objects.append(hist)
-        return canvas
-
-    root_objects = []
-    name_dict = {"phi":"#phi [degree]", "r":"r [m]", "x":"x [m]", "y":"y [m]", "z":"z [m]"}
-
-    def sine_fit(self):
-        voltage = max(self.y_list)
-        frequency = 1e-3
-        crossings = []
-        for i, y in enumerate(self.y_list[1:]):
-            if y > 0. and self.y_list[i] < 0: 
-                crossings.append(i)
-        if len(crossings) > 0:
-            t0 = self.x_list[crossings[0]]
-        print(crossings)#[1], crossings[0]
-        #print "FIT CROSSINGS", self.x_list[crossings[1]], self.x_list[crossings[0]]
-        if len(crossings) > 1:
-            frequency = 1./(self.x_list[crossings[1]]-self.x_list[crossings[0]])
-        frequency *= 2.*math.pi
-        print("Seeding sine fit with", t0, frequency, voltage)
-        fitter = ROOT.TF1("sin "+str(len(self.root_objects)), "[0]*sin([1]*(x-[2]))")
-        fitter.SetParameter(0, voltage)
-        fitter.SetParameter(1, frequency)
-        fitter.SetParameter(2, t0)
-        fitter.SetRange(min(self.x_list), max(self.x_list))
-        #fitter.Draw("SAME")
-        self.graph.Fit(fitter)
-        self.canvas.Update()
-        self.root_objects.append(fitter)
-        rf_parameters = {
-            "voltage":fitter.GetParameter(0),
-            "frequency":fitter.GetParameter(1)/2./math.pi,
-            "t0":fitter.GetParameter(2)
-        }
-        return rf_parameters
-
-    def set_z_axis(self, min_z, max_z):
-          r0, g0, b0 = 0.2082, 0.1664, 0.8293
-          r1, g1, b1 = 1.0, 0.5293, 0.1664
-          stops = [0.0000,1.0]
-          red   = [r0, r1]
-          green = [g0, g1/2.]
-          blue  = [b0, b1]
-          if min_z < 0 and max_z > 0:
-              delta_z = max_z - min_z
-              stops = [0.0000, -min_z/delta_z-0.01, -min_z/delta_z, -min_z/delta_z+0.01, 1.0]
-              red   = [r0, 0.2, 1.0, 0.9, r1]
-              green = [g0, 1.0, 1.0, 0.93, g1]
-              blue  = [b0, 0.2, 1.0, 0.6, b1]
-
-          s = numpy.array(stops)
-          r = numpy.array(red)
-          g = numpy.array(green)
-          b = numpy.array(blue)
-
-          ncontours = 255
-          npoints = len(s)
-          ROOT.TColor.CreateGradientColorTable(npoints, s, r, g, b, ncontours)
-          ROOT.gStyle.SetNumberContours(ncontours)
-
-
-def main_rf(a_dir = None):
-    if a_dir == None:
-        a_dir = "output/baseline/tmp/find_closed_orbits"
-    is_em_field = True
-    #plotter = PlotDumpFields(a_dir+"/FieldMapRPHI.dat", is_em_field)
-    #canvas_xy = plotter.plot()
-    #canvas_1d, hist, graph = plotter.plot_1d({"r":4.}, "phi", "bz")
-    #for fmt in "png", "eps", "root":
-    #    canvas_1d.Print(a_dir+"/field_1d."+fmt)
-    #    canvas_xy.Print(a_dir+"/field_2d."+fmt)
-    rf_list = []
-    time, frequency = [], []
-    plotter = PlotDumpFields(a_dir+"/FieldMapAzimuthal.dat", is_em_field)
-    plotter.load_dump_fields()
-    canvas_1d, hist, graph = plotter.plot_1d({"r":4.}, "phi", "ephi")
-    for file_name in glob.glob(a_dir+"/FieldMapRf?.dat"):
-        plotter = PlotDumpFields(file_name, is_em_field)
-        plotter.load_dump_fields()
-        canvas_1d, hist, graph = plotter.plot_1d({"r":4.}, "t", "ephi")
-        rf_list.append(plotter.sine_fit())
-    for item in rf_list:
-        print(item)
-    return rf_list
-
+        norm = self.get_norm(min_3, max_3)
+        fig_index = matplotlib_wrapper.get_figure_index(fig_index)
+        hist = matplotlib.pyplot.hist2d(self.field_map[var_1],
+                                        self.field_map[var_2],
+                                        bins=[n_1, n_2],
+                                        range=[[min_1, max_1], [min_2, max_2]],
+                                        weights=self.field_map[var_3],
+                                        norm=norm,
+                                        cmap='seismic')
+        print("bfield range:", min_1, max_1, min_2, max_2)
+        bar = matplotlib.pyplot.colorbar()
+        bar.set_label(self.name_dict[var_3])
+        return fig_index
 
 def main(a_dir = None):
     if a_dir == None:
         a_dir = "output/baseline/tmp/find_closed_orbits"
     is_em_field = False
-    #plotter = PlotDumpFields(a_dir+"/FieldMapRPHI.dat", is_em_field)
-    #canvas_xy = plotter.plot()
-    #canvas_1d, hist, graph = plotter.plot_1d({"r":4.}, "phi", "bz")
-    #for fmt in "png", "eps", "root":
-    #    canvas_1d.Print(a_dir+"/field_1d."+fmt)
-    #    canvas_xy.Print(a_dir+"/field_2d."+fmt)
-    rf_list = []
-    time, frequency = [], []
     plotter = PlotDumpFields(a_dir+"/FieldMapXY.dat", is_em_field)
     plotter.load_dump_fields()
-    canvas_xy = plotter.plot()
-    canvas_xy.Print("field_map_xy.png")
-    for item in rf_list:
-        print(item)
-    return rf_list
+    plotter.plot()
 
 if __name__ == "__main__":
     if len(sys.argv) < 2  or not os.path.isdir(sys.argv[1]):

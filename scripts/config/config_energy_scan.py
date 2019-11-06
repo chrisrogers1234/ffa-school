@@ -1,23 +1,15 @@
 import math
 import os
-import json
+from . import config_base as config
 
-from . import config_base
-
-def get_substitution_list():
-    substitution_list = []
-    for index in [energy for energy in range(3, 31, 3)]: #range(30, 31, 3)]:
-        sub = config_base.get_baseline_substitution()
-        sub["__energy__"] = float(index)
-        substitution_list.append(sub)
-    print(json.dumps(substitution_list, indent=2))
-    return substitution_list
-
-class Config(config_base.Config):
+class Config(config.Config):
     def __init__(self):
         super(Config, self).__init__()
-        self.run_control["output_dir"] = os.path.join(os.getcwd(), "output/baseline_energy_scan")
-        self.substitution_list = get_substitution_list()
-        self.run_control["find_closed_orbits"] = True
+        self.substitution_list = []
+        for energy in [3*i for i in range(1, 11)]:
+            self.substitution_list.append(config.get_baseline_substitution())
+            self.substitution_list[-1]["__energy__"] = energy
+        self.run_control["output_dir"] = os.path.join(os.getcwd(), "output/energy_scan")
         self.run_control["find_tune"] = False
         self.run_control["find_da"] = False
+

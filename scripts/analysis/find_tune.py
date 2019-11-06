@@ -9,18 +9,16 @@ import sys
 import math
 import os
 import shutil
-import ROOT
+import matplotlib
+
 from opal_tracking import OpalTracking
 import xboa.common as common
 from xboa.hit import Hit
 from xboa.algorithms.tune import FFTTuneFinder
 from xboa.algorithms.tune import DPhiTuneFinder
-
 from utils import utilities
 
-# CHECK - why is there a sign error?
-
-class Tune(object):
+class TuneFinder(object):
     def __init__(self, config):
         """
         Find the tune. 
@@ -37,7 +35,8 @@ class Tune(object):
         self.unique_id = 1
         self.lattice_src = config.tracking["lattice_file"]
         self.probe_filename = config.find_tune["probe_files"]
-        co_file = os.path.join(config.run_control["output_dir"], config.find_closed_orbits["output_file"]+".out")
+        co_file = os.path.join(config.run_control["output_dir"],
+                               config.find_closed_orbits["output_file"]+".out")
         self._load_closed_orbits(co_file)
         self.delta_x = config.find_tune["delta_x"]
         self.delta_y = config.find_tune["delta_y"]
@@ -50,8 +49,9 @@ class Tune(object):
         self.lattice = "/SectorFFAGMagnet.tmp"
         self.beam_file = "/disttest.dat"
         self.log_file = "/log"
-        self.output_filename = config.find_tune["output_file"]
         self.output_dir = config.run_control["output_dir"]
+        self.output_filename = os.path.join(self.output_dir,
+                                            config.find_tune["output_file"])
 
     def find_tune_dphi(self):
         """
@@ -60,6 +60,8 @@ class Tune(object):
         by looking at tracking output; transforming the ellipse into a circle
         using LU decomposition; then calculating the angle advanced.
         """
+        plot_dir = os.path.join(self.output_dir, "find_tune")
+        utilities.clear_dir(plot_dir)
         cwd = os.getcwd()
         fout = open(self.output_filename, "w")
         index = 0
@@ -70,8 +72,6 @@ class Tune(object):
                 print("Error - no closed orbit")
                 continue
             index += 1
-            if index >= self.config.find_tune["root_batch"]:
-                ROOT.gROOT.SetBatch(True)
             subs = closed_orbit["substitutions"]
             for item, key in self.config.find_tune["subs_overrides"].items():
                 subs[item] = key
@@ -106,10 +106,6 @@ class Tune(object):
                 for track_index, track in enumerate(tracking.last):
                     print('Track', track_index, 'of', len(tracking.last), \
                           'with', len(track), 'hits')
-                    #for hit in track:
-                    #    print '    ', hit['t'], 'polar:', math.atan2(hit['y'], \
-                    #          hit['x']), (hit['y']**2+hit['x']**2)**0.5, \
-                    #          'cart:', hit['x'], hit['y'], hit['z']
                 finder.u = finder.u[1:]
                 finder.up = finder.up[1:]
                 try:
@@ -122,14 +118,18 @@ class Tune(object):
                 tune_info[axis1+"_signal"] = list(zip(finder.u, finder.up))
                 tune_info[axis1+"_dphi"] = finder.dphi
                 tune_info[axis1+"_n_cells"] = len(finder.dphi)
-                canvas, hist, graph = finder.plot_phase_space()
-                name = os.path.join(self.output_dir, "tune_"+str(i)+"_"+axis1+"_phase-space")
-                for format in "png", "eps", "root":
-                    canvas.Print(name+"."+format)
-                canvas, hist, graph = finder.plot_cholesky_space()
-                name = os.path.join(self.output_dir, "tune_"+str(i)+"_"+axis1+"_cholesky-space")
-                for format in "png", "eps", "root":
-                    canvas.Print(name+"."+format)
+                fig_index = finder.plot_phase_space_matplotlib("%s [mm]"%axis1, "%s [MeV/c]"%axis2)
+                name = os.path.join(plot_dir,
+                                    "tune_"+str(i)+"_"+axis1+"_phase-space")
+                fig = matplotlib.pyplot.figure(fig_index)
+                for format in ["png",]:
+                    fig.savefig(name+"."+format)
+                fig_index = finder.plot_cholesky_space_matplotlib()
+                name = os.path.join(plot_dir,
+                                    "tune_"+str(i)+"_"+axis1+"_cholesky-space")
+                fig = matplotlib.pyplot.figure(fig_index)
+                for format in ["png",]:
+                    fig.savefig(name+"."+format)
                 for i, u in enumerate([]):#finder.u[:-1]):
                     up = finder.up[i]
                     dphi = finder.dphi[i]
@@ -151,7 +151,7 @@ class Tune(object):
 
     def _temp_dir(self):
         """Make a temporary directory for tune calculation"""
-        tmp_dir = os.path.join(self.output_dir, "tmp/tune/")
+        tmp_dir = os.path.join(self.output_dir, self.config.find_tune["run_dir"])
         try:
             os.makedirs(tmp_dir)
         except OSError:
@@ -164,10 +164,6 @@ class Tune(object):
         fin = open(filename)
         closed_orbits = [json.loads(line) for line in fin.readlines()]
         self.closed_orbits_cached = closed_orbits
-        
-        #closed_orbits_energy = [orbit[0] for orbit in closed_orbits]
-        #closed_orbits_x = [orbit[1:][0] for orbit in closed_orbits]
-        #closed_orbits_dict = dict(zip(closed_orbits_energy, closed_orbits_x))
 
     def _reference(self, hit):
         """Generate a reference particle"""
@@ -177,10 +173,8 @@ class Tune(object):
         return hit
 
 def main(config):
-    tune = Tune(config)
+    tune = TuneFinder(config)
     tune.find_tune_dphi()
-    ROOT.gROOT.SetBatch(False)
-
 
 if __name__ == "__main__":
     main()

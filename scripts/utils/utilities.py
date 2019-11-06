@@ -1,6 +1,9 @@
 import os
 import numpy
-import ROOT
+try:
+    import ROOT
+except ImportError:
+    pass
 import shutil
 
 import xboa.common

@@ -1,0 +1,47 @@
+FFA School Files
+================
+
+These files form the main source material for the FFA school held at PSI on
+22nd Nov 2019, for tracking an FFA using the OPAL code.
+
+Contact: chris.rogers@stfc.ac.uk
+
+Table of Contents
+-----------------
+1. Setting up the environment
+2. Running a first example
+3. Finding closed orbits
+4. Finding tunes
+5. Finding dynamic aperture
+6. Extended examples
+
+
+
+1. Setting up the Environment
+-----------------------------
+
+Summary of commands (tested in linux mint 19.1), assuming you have sudo 
+privileges
+
+sudo apt-get install python3-devel python3-pip g++
+pip3 install numpy matplotlib scipy
+git clone git@github.com:chrisrogers1234/xboa.git
+git clone https://github.com/chrisrogers1234/fetsring.git
+cd xboa
+sudo python setup.py install
+wget http://amas.web.psi.ch/Downloads/OPAL/package/OPAL-2.0.1-1-x86_64-linux.tar.xz
+tar -xf OPAL-2.0.1-1-x86_64-linux.tar.xz
+source OPAL-2.0.1-1/etc/profile.d/opal.sh
+cd 
+
+
+The following packages are required in order to run the scripts contained in
+this example:
+
+* python3-dev
+* python3-pip
+* g++
+
+In ubuntu-derivative systems these can be installed by doing
+
+
