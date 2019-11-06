@@ -2,7 +2,8 @@ FFA School Files
 ================
 
 These files form the main source material for the FFA school held at PSI on
-22nd Nov 2019, for tracking an FFA using the OPAL code.
+22nd Nov 2019, for tracking an FFA using the OPAL code. This tutorial is
+tested against opal version 2.0.1
 
 Contact: chris.rogers@stfc.ac.uk
 
@@ -21,27 +22,35 @@ Table of Contents
 -----------------------------
 
 Summary of commands (tested in linux mint 19.1), assuming you have sudo 
-privileges
+privileges:
 
-sudo apt-get install python3-devel python3-pip g++
-pip3 install numpy matplotlib scipy
-git clone git@github.com:chrisrogers1234/xboa.git
-git clone https://github.com/chrisrogers1234/fetsring.git
-cd xboa
-sudo python setup.py install
-wget http://amas.web.psi.ch/Downloads/OPAL/package/OPAL-2.0.1-1-x86_64-linux.tar.xz
-tar -xf OPAL-2.0.1-1-x86_64-linux.tar.xz
-source OPAL-2.0.1-1/etc/profile.d/opal.sh
-cd 
+  sudo apt-get install python3-devel python3-pip g++
+  pip3 install numpy matplotlib scipy
+  git clone git@github.com:chrisrogers1234/xboa.git
+  cd xboa
+  sudo python setup.py install
+  cd ..
+
+Not needing sudo privileges:
+
+  mkdir /path/to/working/dir
+  cd /path/to/working/dir
+  git clone https://github.com/chrisrogers1234/ffa-school.git
+  wget http://amas.web.psi.ch/Downloads/OPAL/package/OPAL-2.0.1-1-x86_64-linux.tar.xz
+  tar -xf OPAL-2.0.1-1-x86_64-linux.tar.xz
+  source OPAL-2.0.1-1/etc/profile.d/opal.sh
+
+Before running the examples:
+
+  cd /path/to/working/dir
+  export OPAL_EXE_PATH=OPAL-2.0.1-1/bin/
+  cd ffa-school
+  source env.sh
+
+The env.sh script also checks that the environment is okay and returns an error
+if it detects missing libraries.
 
 
-The following packages are required in order to run the scripts contained in
-this example:
-
-* python3-dev
-* python3-pip
-* g++
-
-In ubuntu-derivative systems these can be installed by doing
-
+2. Running an example lattice
+-----------------------------
 
