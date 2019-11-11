@@ -6,12 +6,16 @@ import time
 
 import xboa.common as common
 from xboa.hit import Hit
+
 from opal_tracking import OpalTracking
 from utils import utilities
+from plotting import plot_da
+
 
 class DAFinder(object):
     def __init__(self, config):
-        self.closed_orbit_file_name = os.path.join(config.run_control["output_dir"], config.find_closed_orbits["output_file"])+".out"
+        self.closed_orbit_file_name = os.path.join(config.run_control["output_dir"], 
+                                                   config.find_closed_orbits["output_file"])
         self.da_file_name = os.path.join(config.run_control["output_dir"], config.find_da["get_output_file"])
         self.scan_file_name = os.path.join(config.run_control["output_dir"], config.find_da["scan_output_file"]) 
         self.config = config
@@ -43,6 +47,7 @@ class DAFinder(object):
                 co_element['y_da'] = self.get_da(co_element, 'y', seed_y)
             print(json.dumps(co_element), file=self.fout_get())
             self.fout_get().flush()
+        os.rename(self.da_file_name+".tmp", self.da_file_name)
 
     def da_all_scan(self, co_index_list, x_list, y_list):
         if co_index_list == None:
@@ -55,6 +60,7 @@ class DAFinder(object):
                 print("Failed to find index", i, "in co_list of length", len(co_list))
                 continue
             co_element['da_scan'] = self.da_scan(co_element, x_list, y_list)
+        os.rename(self.scan_file_name+".tmp", self.scan_file_name)
 
     def load_closed_orbits(self):
         fin = open(self.closed_orbit_file_name)
@@ -199,6 +205,7 @@ def main(config):
     finder = DAFinder(config)
     finder.da_all_scan(config.find_da["row_list"], config.find_da["scan_x_list"], config.find_da["scan_y_list"])
     finder.get_all_da(config.find_da["row_list"], config.find_da["x_seed"], config.find_da["y_seed"], )
+    plot_da.main([finder.da_file_name])
     print("Done find da")
     sys.stdout.flush()
     return

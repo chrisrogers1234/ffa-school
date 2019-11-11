@@ -36,6 +36,8 @@ REAL FFA_POS_EXTENT=__pos_extent__; // [m]
 
 /////////////////// GENERAL ////////////////////////////////////
 
+REAL STEP_SIZE_MM = __step_size__; // [mm]
+REAL N_TURNS = __n_turns__; // number of turns at 2.55 MeV/c
 REAL R0 = 4.;
 REAL N_CELLS=15; // NOTE!! If you change the number of cells, you must *by hand*
                  // change the number of ringprobes
@@ -198,12 +200,11 @@ value, {P0, E0, M_P};
 
 REAL C_LIGHT = 300.; // MM/NS
 
-REAL STEP_SIZE_MM = __step_size__; //*STEP_SIZE_NS;
-REAL STEP_SIZE_NS = STEP_SIZE_MM/(P0/E0*C_LIGHT);
+REAL STEP_SIZE_NS = STEP_SIZE_MM/(P0/(E0+M_P)*C_LIGHT); // ns
 
-REAL STEPS_PER_TURN = 2*PI*R0*1000./STEP_SIZE_MM*10./25.; //1000000;
-REAL MAX_STEPS = __n_turns__*STEPS_PER_TURN*3.;
-REAL BFREQ = 1.e3/STEPS_PER_TURN/STEP_SIZE_NS*3.18658692e-05*100.;
+REAL BFREQ = 1./1.15213; // MHz;
+REAL STEPS_PER_TURN = 1.e3/BFREQ/STEP_SIZE_NS;
+REAL MAX_STEPS = N_TURNS*STEPS_PER_TURN;
 
 value, {BFREQ, STEP_SIZE_NS, STEP_SIZE_MM, MAX_STEPS, STEPS_PER_TURN};
 

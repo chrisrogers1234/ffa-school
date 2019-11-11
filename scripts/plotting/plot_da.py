@@ -1,3 +1,4 @@
+import sys
 import copy
 import math
 import glob
@@ -5,12 +6,14 @@ import os
 import json
 import numpy
 import scipy.spatial
-import xboa.common as common
 import matplotlib
+
+import xboa.common as common
 import xboa.common.matplotlib_wrapper as matplotlib_wrapper
-from utils import utilities
 from xboa.hit import Hit
 from xboa.algorithms.tune import DPhiTuneFinder
+
+from utils import utilities
 
 def load_data(file_name):
     fin = open(file_name)
@@ -84,7 +87,7 @@ def get_area(points_cartesian):
 
 def plot_da(data, max_n_points, plot_dir, acceptance):
     variables = utilities.get_substitutions_axis(data)
-    plot_dir = os.path.join(plot_dir, "plot_da")
+    plot_dir = os.path.join(plot_dir, "find_da")
     utilities.clear_dir(plot_dir)
     for index, item in enumerate(data):
         for key in variables:
@@ -152,16 +155,16 @@ def plot_one_da(row_data, da_key, axis1, axis2, max_n_points, variables, accepta
             matplotlib.pyplot.autoscale(enable=False)
     return canvas
 
-def main():
-    base_dir = "output/"
-    for file_name in glob.glob(base_dir+"/baseline/get_da.tmp"):
-        data = load_data(file_name)
-        plot_dir = os.path.split(file_name)[0]
-        # acceptance should be normalised mm mrad
-        plot_da(data, 50, plot_dir, 2.7*1e-3*math.pi)
+def main(file_name_list):
+    for file_name_glob in file_name_list:
+        for file_name in glob.glob(file_name_glob):
+            data = load_data(file_name)
+            plot_dir = os.path.split(file_name)[0]
+            # acceptance should be normalised mm mrad
+            plot_da(data, 50, plot_dir, 2.7*1e-3*math.pi)
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv[1:])
     print("Finished - press <CR> to close")
     input()
 

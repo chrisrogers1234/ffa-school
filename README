@@ -199,19 +199,212 @@ You can always recover the original files by copying from ffa-school/first_run
 3. Finding Lattice Parameters
 -----------------------------
 It is useful to be able to find lattice parameters based on the tracking 
-routines. In this section, we will run a series of scripts to find the tune,
-closed orbit and dynamic aperture of the ring.
+routines. In this section, we will run a series of scripts to find the closed
+orbit, tune and dynamic aperture of the ring.
 
-The basic operation of the script is handled by a number of 
+The driver script is scripts/bin/run_one.py. This loads a user-defined
+configuration and requests each sub-process to execute; first the script finds
+the closed orbit, then the tune, and then the dynamic aperture.
+
+Note that these scripts are included as a convenience; they are not part of the
+OPAL core library.
+
+3.1 Run the scripts
+-------------------
+To have a go at running the scripts, try
+
+    python3 scripts/bin/run_one.py scripts/config/config_base.py
+
+You should get output starting with
+
+    Using configuration module config.config_base
+    Using config seed [4100.0, -7.29035424]
+
+and ending with
+
+    Done find da
+
+When the scripts run, they make a directory output/base which contains output
+files.
+
+3.1.1 Closed Orbit
+------------------
+The closed orbit finder uses an iterative process to find closed orbits. It
+tracks the beam through a number of cells. Trajectories undergo approximate 
+simple harmonic motion, so they make an ellipse in phase space. The centre of 
+the ellipse is used to seed the next iteration in the closed orbit finding.
+
+The first ellipse and last ellipse is plotted in 
+
+    output/base/find_closed_orbits
+
+There are two files; 
+
+* close_orbit-sub-index_0-i_0.png: this shows the phase space coordinates of the
+  initial particle, read out at the end of each cell as the particle is tracked
+  through one full turn of the ring.
+* closed_orbit-sub-index_0-i_5.png: this shows the phase space coordinates of 
+  the particle at the end of the closed orbit iterations. The closed orbit is
+  found at an accuracy of a few micron and a few keV/c.
+
+The closed orbit is stored in temporary cache output/base/find_closed_orbit.out
+which is formatted in json text format.
+
+3.1.2 Tune
+----------
+The closed orbit is loaded and used as the basis for the tune calculation.
+Particles are displaced from the nominal closed orbit by 1 mm and tracked; the
+resulting particle trajectories are written out and the elliptical trajectory of
+particles is calculated. The elliptical trajectory is decomposed into 
+action-angle coordinates by means of cholesky decomposition and the phase 
+advance per cell is calculated.
+
+There are four plots in
+
+    output/base/find_tune
+
+The horizontal phase space ellipse and cholesky decomposition is in
+
+    output/base/find_tune/tune_0_x_phase-space.png
+    output/base/find_tune/tune_0_x_cholesky-space.png
+
+respectively. The vertical phase space ellipse and cholesky decomposition is in
+
+    output/base/find_tune/tune_0_y_phase-space.png
+    output/base/find_tune/tune_0_y_cholesky-space.png
+
+respectively.
+
+3.1.3 Dynamic Aperture
+----------------------
+The dynamic aperture (DA) is found by tracking trajectories displaced from the 
+closed orbit; if the trajectory passes through at least 50 cells, it is 
+considered to be within the DA. If the trajectory is lost before it passes 
+through 50 cells, it is considered to be outside the dynamic aperture. A 
+binomial search is performed to find the particle just on the edge of the DA.
+
+There are four plots in
+
+    output/base/find_da
+
+The horizontal DA is found by displacing a particle in x. The resultant 
+phase space trajectories are shown in
+
+    output/base/find_da/da_0_x_da_x_x\'.png
+    output/base/find_da/da_0_x_da_y_y\'.png
+
+The first file shows the trajectory in x x' space. Particles inside the DA are
+shown in lime, the highest amplitude track that remains in the DA is shown in
+black, while trajectories that are outside the DA are shown in grey.
+
+The second file shows the trajectory in y-y' space. As the particle starts on 
+the midplane, the y-y' trajectory is always 0.
+
+The vertical DA is found by displacing a particle in y. The resultant 
+phase space trajectories are shown in
+
+    output/base/find_da/da_0_y_da_y_y\'.png
+    output/base/find_da/da_0_y_da_x_x\'.png
+
+The first file shows the trajectory in y y' space, and a well formed DA is
+observed. The second file shows the trajectory in x x' space. It is noted that
+there is some coupling between x and y, so even though the particle was 
+initially displaced only in the y direction, there is some motion in the x x'
+plane.
 
 
-3.1 Closed orbit scripts
-------------------------
+3.2 Variable Scans
+------------------
+These scripts work by changing variables in the OPAL lattice file and the
+distribution file. During each calculation, the temporary OPAL lattice file and
+simulation is run from
 
+    output/base/tmp/find_closed_orbits
+    output/base/tmp/find_tune
+    output/base/tmp/find_da
 
+for the closed orbit, tune and DA calculation respectively. The file 
 
+    lattice/FETS_Ring.in
 
+is used as a source for the lattice file.
 
+3.2.1 Config file
+-----------------
+The config file determines the basic parameters of the lattice file. The config
+file is written in the python programming language. Make a copy of the
+config_base file
+
+    cp scripts/config/config_base.py scripts/config/config_school.py
+
+Open the file in a text editor. The first 30 lines show a list of lattice 
+parameters. Each of the string keys like "__energy__" corresponds to one or more
+strings in lattice/FETS_Ring.in; the key is substituted for a variable value
+during run time.
+
+To see how this works, try changing "__b_mean__" in
+  
+    scripts/config/config_school.py
+
+Try setting, at line 25,
+
+    "__b_mean__":0.400, # was 0.492
+
+Note the syntax - this is an element in a python dictionary, so a comma is
+required at the end of the line (before the # sign which marks a comment).
+
+Before running, it may also be useful to disable the tune and DA calculation,
+and to change the output directory. This can be achieved by adjusting the python 
+dictionary self.run_control defined around line 80:
+
+        #scripts/config/config_school.py line 80:
+        self.run_control = {
+            "find_closed_orbits":True,
+            "find_tune":False, # <----------
+            "find_da":False,  # <--------
+            "output_dir":os.path.join(os.getcwd(), "output/school"), # <-----
+            "clean_output_dir":False,
+        }
+
+Now run the example
+
+    python3 scripts/bin/run_one.py scripts/config/config_school.py
+
+You should see output starting with
+
+    Using configuration module config.config_school
+
+and ending with 
+
+    [4113.41356318   -8.7774234 ]
+    Done find closed orbits
+
+which is the new closed orbit. The output ellipse plots are, as usual, in
+
+    output/school/find_closed_orbits/
+
+Note that, when changing parameters, the algorithm to find a closed orbit can
+fail if the initial particle is outside of the DA of the lattice so that an
+elliptical trajectory is never formed; this risk can be mitigated by only
+making relatively small changes to the lattice file.
+
+3.2.2 Scan
+----------
+The config file
+
+    scripts/config/config_energy_scan.py
+
+has been set up to make a scan in energy. Note that, because this file uses 
+
+    scripts/config/config_base.py
+
+as a base, if you have changed config_base.py the script may not operate as
+expected. 
+
+This config file makes a copy of config_base.py using the python inheritance 
+mechanism. The scripts have been set up to iterate over each of the elements in 
+config_base.substitution_list, and run the closed orbit finder, tune finder and 
+da finder as appropriate.
 
 
 

@@ -15,21 +15,6 @@ import plotting.plot_dump_fields as plot_dump_fields
 
 MASS = 938.2720813
 
-class Colors:
-    ref_colours = numpy.array(["black", "red", "orange", "darkkhaki", 
-                          "green", "darkcyan", "blue", "darkviolet", "magenta"])
-    colours = copy.deepcopy(ref_colours)
-
-    @classmethod
-    def next(cls):
-        a_colour = cls.colours[0]
-        cls.colours = numpy.roll(cls.colours, 1)
-        return a_colour
-    
-    @classmethod
-    def reset(cls):
-        cls.colours = copy.deepcopy(cls.ref_colours)
-
 def r_phi_track_file(data):
     data = copy.deepcopy(data)
     data["r"] = list(range(len(data["x"])))
@@ -98,7 +83,7 @@ def load_track_orbit(file_name):
 def plot_x_y_projection(step_list, fig_index = None):
     axes = None
     options = {
-        "color":Colors.next(),
+        "color":utilities.Colors.next(),
     }
     matplotlib.pyplot.autoscale(False)
     fig_index = matplotlib_wrapper.make_graph(step_list["x"], "x [mm]",
@@ -116,7 +101,7 @@ def plot_r_phi_projection(step_list, fig_index = None):
     fig_index = matplotlib_wrapper.make_graph(phi_points, "$\phi$ [$^{\circ}$]",
                                               r_points, "r [mm]",
                                               sort=False, fig_index=fig_index,
-                                              kwds={"color":Colors.next()})
+                                              kwds={"color":utilities.Colors.next()})
     return fig_index
 
 def plot_x_z_projection(step_list, fig_index = None):
@@ -127,7 +112,7 @@ def plot_x_z_projection(step_list, fig_index = None):
     fig_index = matplotlib_wrapper.make_graph(phi_points, "$\phi$ [$^{\circ}$]",
                                               r_points, "z [mm]",
                                               sort=False, fig_index=fig_index,
-                                              kwds={"color":Colors.next()})
+                                              kwds={"color":utilities.Colors.next()})
     return fig_index
 
 def plot_beam_pipe(inner_radius, outer_radius, n_periods, fig_index=None):

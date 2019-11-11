@@ -1,3 +1,4 @@
+import copy
 import os
 import numpy
 try:
@@ -11,6 +12,23 @@ import xboa.hit
 
 
 from opal_tracking import OpalTracking
+
+class Colors:
+    ref_colours = numpy.array(["black", "red", "orange", "darkkhaki", 
+                          "green", "darkcyan", "blue", "darkviolet", "magenta"])
+    colours = copy.deepcopy(ref_colours)
+
+    @classmethod
+    def next(cls):
+        a_colour = cls.colours[0]
+        cls.colours = numpy.roll(cls.colours, 1)
+        return a_colour
+    
+    @classmethod
+    def reset(cls):
+        cls.colours = copy.deepcopy(cls.ref_colours)
+
+
 
 def clear_dir(dir_name):
     try:

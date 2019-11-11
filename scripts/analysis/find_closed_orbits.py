@@ -34,8 +34,10 @@ class ClosedOrbitFinder(object):
         matplotlib.pyplot.show(block=False)
         name = os.path.join(self.out_dir, "find_closed_orbits")
         name = os.path.join(name, "closed_orbit-sub-index_"+str(sub_index)+"-i_"+str(i))
-        for format in "eps", "png":
+        for format in ["png"]:
             fig.savefig(name+"."+format)
+        matplotlib.pyplot.close(fig_index)
+
 
     def find_closed_orbit(self, sub_index, subs, seed):
         """
@@ -184,9 +186,9 @@ class ClosedOrbitFinder(object):
             fout.flush()
         fout.close()
         time.sleep(1)
-        os.rename(fout_name+".tmp", fout_name+".out")
+        os.rename(fout_name+".tmp", fout_name)
 
 def main(config):
     finder = ClosedOrbitFinder(config)
     finder.find_all_closed_orbits()
-    
+    print("Done find closed orbits")

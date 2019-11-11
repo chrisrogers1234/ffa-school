@@ -19,7 +19,8 @@ REAL RADIANS = PI/180; // units
 REAL RMIN=R0-2.0; // minimum radius for tracking
 REAL RMAX=R0+2.0; // maximum radius for tracking
 REAL N_TURNS=5.1; // number of turns to track through
-REAL STEP_SIZE_MM = 10.0; // step size in mm
+REAL STEP_SIZE_MM=10.0; // step size in mm
+REAL PERIOD=1152.13; // time taken to go through one revolution of the ring
 
 //////////// BEAM PARAMETERS //////////////////
 REAL E0 = 2.55/1000; // initial energy [GeV]
@@ -131,7 +132,7 @@ REAL C_LIGHT = 300.; // mm/ns
 
 REAL STEP_SIZE_NS = STEP_SIZE_MM/(P0/(E0+M_P)*C_LIGHT); // ns
 
-REAL BFREQ = 1./1.15213; // MHz // 1./STEPS_PER_TURN/STEP_SIZE_NS*2.26*3.18658692e-02*100./2*12./15.*14./15.;
+REAL BFREQ = 1./1.15213; // MHz;
 REAL STEPS_PER_TURN = 1.e3/BFREQ/STEP_SIZE_NS;
 REAL MAX_STEPS = N_TURNS*STEPS_PER_TURN;
 REAL CO_OFFSET = -1*R0; // 

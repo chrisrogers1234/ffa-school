@@ -10,6 +10,7 @@ class Config(config.Config):
             self.substitution_list.append(config.get_baseline_substitution())
             self.substitution_list[-1]["__energy__"] = energy
         self.run_control["output_dir"] = os.path.join(os.getcwd(), "output/energy_scan")
-        self.run_control["find_tune"] = False
+        self.run_control["find_closed_orbits"] = True
+        self.run_control["find_tune"] = True
         self.run_control["find_da"] = False
 

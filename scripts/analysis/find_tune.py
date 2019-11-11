@@ -36,7 +36,7 @@ class TuneFinder(object):
         self.lattice_src = config.tracking["lattice_file"]
         self.probe_filename = config.find_tune["probe_files"]
         co_file = os.path.join(config.run_control["output_dir"],
-                               config.find_closed_orbits["output_file"]+".out")
+                               config.find_closed_orbits["output_file"])
         self._load_closed_orbits(co_file)
         self.delta_x = config.find_tune["delta_x"]
         self.delta_y = config.find_tune["delta_y"]
@@ -52,6 +52,9 @@ class TuneFinder(object):
         self.output_dir = config.run_control["output_dir"]
         self.output_filename = os.path.join(self.output_dir,
                                             config.find_tune["output_file"])
+        self.plot_dir = os.path.join(self.output_dir, "find_tune")
+        utilities.clear_dir(self.plot_dir)
+
 
     def find_tune_dphi(self):
         """
@@ -60,8 +63,6 @@ class TuneFinder(object):
         by looking at tracking output; transforming the ellipse into a circle
         using LU decomposition; then calculating the angle advanced.
         """
-        plot_dir = os.path.join(self.output_dir, "find_tune")
-        utilities.clear_dir(plot_dir)
         cwd = os.getcwd()
         fout = open(self.output_filename, "w")
         index = 0
@@ -118,18 +119,7 @@ class TuneFinder(object):
                 tune_info[axis1+"_signal"] = list(zip(finder.u, finder.up))
                 tune_info[axis1+"_dphi"] = finder.dphi
                 tune_info[axis1+"_n_cells"] = len(finder.dphi)
-                fig_index = finder.plot_phase_space_matplotlib("%s [mm]"%axis1, "%s [MeV/c]"%axis2)
-                name = os.path.join(plot_dir,
-                                    "tune_"+str(i)+"_"+axis1+"_phase-space")
-                fig = matplotlib.pyplot.figure(fig_index)
-                for format in ["png",]:
-                    fig.savefig(name+"."+format)
-                fig_index = finder.plot_cholesky_space_matplotlib()
-                name = os.path.join(plot_dir,
-                                    "tune_"+str(i)+"_"+axis1+"_cholesky-space")
-                fig = matplotlib.pyplot.figure(fig_index)
-                for format in ["png",]:
-                    fig.savefig(name+"."+format)
+                self.do_plots(i, axis1, axis2, finder)
                 for i, u in enumerate([]):#finder.u[:-1]):
                     up = finder.up[i]
                     dphi = finder.dphi[i]
@@ -148,6 +138,23 @@ class TuneFinder(object):
             print(json.dumps(tune_info), file=fout)
             fout.flush()
         os.chdir(cwd)
+
+    def do_plots(self, i, axis1, axis2, finder):
+        fig_index = finder.plot_phase_space_matplotlib("%s [mm]"%axis1, "%s [MeV/c]"%axis2)
+        name = os.path.join(self.plot_dir,
+                            "tune_"+str(i)+"_"+axis1+"_phase-space")
+        fig = matplotlib.pyplot.figure(fig_index)
+        for format in ["png",]:
+            fig.savefig(name+"."+format)
+        matplotlib.pyplot.close(fig_index)
+
+        fig_index = finder.plot_cholesky_space_matplotlib()
+        name = os.path.join(self.plot_dir,
+                            "tune_"+str(i)+"_"+axis1+"_cholesky-space")
+        fig = matplotlib.pyplot.figure(fig_index)
+        for format in ["png",]:
+            fig.savefig(name+"."+format)
+        matplotlib.pyplot.close(fig_index)
 
     def _temp_dir(self):
         """Make a temporary directory for tune calculation"""
