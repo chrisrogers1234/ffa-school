@@ -99,19 +99,15 @@ are two files that we will look at initially
 the FFA magnets.
 
 There is a script to plot the field map, with the closed orbit superimposed, in
-the scripts directory. Go back up to the top level directory of the FFA school,
+the scripts directory. Try running the plot_orbit.py script
 
-    cd ../..
-
-and try running the plot_orbit.py script
-
-    python3 scripts/plotting/plot_orbit.py output/first_run/FETS_Ring-trackOrbit.dat
+    python3 ../../scripts/plotting/plot_orbit.py output/first_run/FETS_Ring-trackOrbit.dat
 
 You should get output ending in
 
     plot_orbit finished okay
 
-If you check output/first_run you should see a new file, 
+You should see a new file,
 
     closed_orbit_plan_bz.png
 
@@ -119,7 +115,7 @@ Open the file using an image viewing software, like gimp, gwenview, gthumb or
 firefox.
 
 The image shows colours (blue through red), which indicate the vertical 
-component of the field map and a blue wavy line which indicates the trajectory
+component of the field map and a black wavy line which indicates the trajectory
 of the particle that was tracked through the field.
 
 2.1 Input Particle Control
@@ -151,8 +147,7 @@ disttest.dat:
 Rerun opal and make the plot of the orbit again.
 
     ${OPAL_EXE_PATH}/opal FETS_Ring.opal
-    cd ../..
-    python3 scripts/plotting/plot_orbit.py output/first_run/FETS_Ring-trackOrbit.dat
+    python3 ../../scripts/plotting/plot_orbit.py output/first_run/FETS_Ring-trackOrbit.dat
 
 and the orbitting particle can be seen to oscillate.
 
@@ -189,8 +184,7 @@ This will change the mean field on the reference radius, 4.0 metres in this
 example. Now run the simulation and make the plot.
 
     ${OPAL_EXE_PATH}/opal FETS_Ring.opal
-    cd ../..
-    python3 scripts/plotting/plot_orbit.py output/first_run/FETS_Ring-trackOrbit.dat
+    python3 ../../scripts/plotting/plot_orbit.py output/first_run/FETS_Ring-trackOrbit.dat
 
 The orbiting particle is (almost) back on a closed orbit.
 
@@ -202,8 +196,19 @@ Try changing some other things in the input file:
 
 You can always recover the original files by copying from ffa-school/first_run
 
+3. Finding Lattice Parameters
+-----------------------------
+It is useful to be able to find lattice parameters based on the tracking 
+routines. In this section, we will run a series of scripts to find the tune,
+closed orbit and dynamic aperture of the ring.
+
+The basic operation of the script is handled by a number of 
+
+
 3.1 Closed orbit scripts
 ------------------------
+
+
 
 
 

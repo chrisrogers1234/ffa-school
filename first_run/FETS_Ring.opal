@@ -29,7 +29,7 @@ REAL BEAM_CHARGE=1.0; // [fraction of cell length]; 0 is on RINGPROBE01
 REAL LATTICE_PHI_OFFSET=0.0; // [fraction of cell length]; 0 means centre of cell lines up with phi = 0.
 
 /////////// MAIN MAGNET //////////////////////
-REAL FFA_B_MEAN=0.400; // [T]; mean field over the entire cell at R0
+REAL FFA_B_MEAN=0.492; // [T]; mean field over the entire cell at R0
 REAL FFA_DF_RATIO=-0.36; // []; BD/BF
 REAL FFA_F_LENGTH=0.2; // [fraction of cell length]; F magnet length
 REAL FFA_D_LENGTH=0.1; // [fraction of cell length]; D magnet length
@@ -39,7 +39,7 @@ REAL FFA_MAX_Y_POWER=2; // []; maximum power in field expansion off midplane
 REAL FFA_F_END_LENGTH=0.0756285955107769; // [] end length in multiples of centre length
 REAL FFA_D_END_LENGTH=0.5520887472286714; // [] end length in multiples of centre length
 REAL FFA_NEG_EXTENT=1.0; // radial extent inwards from R0 [m]
-REAL FFA_POS_EXTENT=2.0; // radial extent outwards from R0 [m]
+REAL FFA_POS_EXTENT=1.0; // radial extent outwards from R0 [m]
 
 /////////////////// RING PROBES //////////////////////////////////
 REAL RING_PROBE_PHI_OFFSET=0.0;
