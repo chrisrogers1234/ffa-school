@@ -16,7 +16,7 @@ import plotting.plot_dump_fields as plot_dump_fields
 MASS = 938.2720813
 
 class Colors:
-    ref_colours = numpy.array(["red", "orange", "darkkhaki", 
+    ref_colours = numpy.array(["black", "red", "orange", "darkkhaki", 
                           "green", "darkcyan", "blue", "darkviolet", "magenta"])
     colours = copy.deepcopy(ref_colours)
 
@@ -97,9 +97,15 @@ def load_track_orbit(file_name):
 
 def plot_x_y_projection(step_list, fig_index = None):
     axes = None
+    options = {
+        "color":Colors.next(),
+    }
+    matplotlib.pyplot.autoscale(False)
     fig_index = matplotlib_wrapper.make_graph(step_list["x"], "x [mm]",
                                               step_list["y"], "y [mm]",
-                                              sort=False, fig_index=fig_index)
+                                              sort=False,
+                                              fig_index=fig_index,
+                                              kwds=options)
     return fig_index
 
 def plot_r_phi_projection(step_list, fig_index = None):
@@ -110,7 +116,7 @@ def plot_r_phi_projection(step_list, fig_index = None):
     fig_index = matplotlib_wrapper.make_graph(phi_points, "$\phi$ [$^{\circ}$]",
                                               r_points, "r [mm]",
                                               sort=False, fig_index=fig_index,
-                                              kwds={"color":next(Colors)})
+                                              kwds={"color":Colors.next()})
     return fig_index
 
 def plot_x_z_projection(step_list, fig_index = None):
@@ -121,7 +127,7 @@ def plot_x_z_projection(step_list, fig_index = None):
     fig_index = matplotlib_wrapper.make_graph(phi_points, "$\phi$ [$^{\circ}$]",
                                               r_points, "z [mm]",
                                               sort=False, fig_index=fig_index,
-                                              kwds={"color":next(Colors)})
+                                              kwds={"color":Colors.next()})
     return fig_index
 
 def plot_beam_pipe(inner_radius, outer_radius, n_periods, fig_index=None):
@@ -131,7 +137,7 @@ def plot_beam_pipe(inner_radius, outer_radius, n_periods, fig_index=None):
     y_inner = [inner_radius*math.cos(i*dt) for i in range(n_steps)]
     options = {
         "linewidth":0.5,
-        "color":"grey"
+        "color":"grey",
     }
     fig_index = matplotlib_wrapper.make_graph(x_inner, "",
                                               y_inner, "",
@@ -208,17 +214,6 @@ def plot_cylindrical(output_dir, opal_run_dir, step_list_of_lists):
         canvas.Print(output_dir+"closed_orbit_elevation."+format)
     Colors.reset()
 
-def plot_zoom(output_dir, opal_run_dir, step_list_of_lists):
-    field_plot = plot_dump_fields.PlotDumpFields(opal_run_dir+"FieldMapXY-zoom.dat")
-    field_plot.load_dump_fields()
-
-    canvas = field_plot.plot_dump_fields("x", "y", "bz")
-    for step_list in step_list_of_lists:
-        canvas, axes, graph = plot_x_y_projection(step_list, canvas)
-    plot_beam_pipe(2.7, 3.7, 12, canvas)
-    for format in ["png"]:
-        canvas.Print(output_dir+"closed_orbit_plan-zoom."+format)
-
 def plot_cartesian(output_dir, opal_run_dir, step_list):
     field_plot = plot_dump_fields.PlotDumpFields(opal_run_dir+"FieldMapXY.dat")
     field_plot.load_dump_fields()
@@ -272,20 +267,15 @@ def main(output_dir, run_dir, run_file_list):
     step_list_of_lists = []
     for run_file in run_file_list:
         step_list_of_lists.append(parse_track_file(opal_run_dir+run_file))
-    #plot_cylindrical(output_dir, opal_run_dir, step_list_of_lists)
-    #print_track(0.1*360./15, step_list_of_lists)
-    #try:
-    #    plot_zoom(output_dir, opal_run_dir, step_list)
-    #except Exception:
-    #    sys.excepthook(*sys.exc_info())
     try:
         plot_cartesian(output_dir, opal_run_dir, step_list_of_lists[0])
     except Exception:
         sys.excepthook(*sys.exc_info())
+    print("plot_orbit finished okay")
 
 if __name__ == "__main__":
     output_dir = os.path.split(sys.argv[1])[0]
     run_dir = ""
     run_file_list = [os.path.split(arg)[1] for arg in sys.argv[1:]]
     main(output_dir, run_dir, run_file_list)
-
+    

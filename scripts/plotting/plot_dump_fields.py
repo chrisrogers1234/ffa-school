@@ -181,7 +181,6 @@ class PlotDumpFields(object):
                                         weights=self.field_map[var_3],
                                         norm=norm,
                                         cmap='seismic')
-        print("bfield range:", min_1, max_1, min_2, max_2)
         bar = matplotlib.pyplot.colorbar()
         bar.set_label(self.name_dict[var_3])
         return fig_index
