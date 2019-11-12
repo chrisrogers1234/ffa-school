@@ -250,9 +250,10 @@ class DAFinder(object):
             a_hit[axis] += seed_x
             try:
                 hits = self.tracking.track_one(a_hit)
-            except RuntimeError:
+            except (RuntimeError, OSError):
                 sys.excepthook(*sys.exc_info())
                 print("Never mind, keep on going...")
+                hits = [a_hit]
             self.data.append([co_delta[axis], [a_hit.dict_from_hit() for a_hit in hits]])
             self.data = sorted(self.data)
             print("Axis", axis, "Seed", seed_x, "Number of cells hit", len(hits), "in", time.time() - my_time, "[s]")

@@ -21,6 +21,7 @@ REAL RMAX=R0+2.0; // maximum radius for tracking
 REAL N_TURNS=5.1; // number of turns to track through
 REAL STEP_SIZE_MM=10.0; // step size in mm
 REAL PERIOD=1152.13; // time taken to go through one revolution of the ring
+REAL MM=1000.0; // unit conversion
 
 //////////// BEAM PARAMETERS //////////////////
 REAL E0 = 2.55/1000; // initial energy [GeV]
@@ -46,8 +47,8 @@ REAL FFA_POS_EXTENT=1.0; // radial extent outwards from R0 [m]
 REAL RING_PROBE_PHI_OFFSET=0.0;
 
 BUILD_PROBE(NAME, ANGLE): MACRO {
-    NAME: PROBE, xstart=RMIN*1000*cos(ANGLE), xend=RMAX*1000*cos(ANGLE),
-                 ystart=RMIN*1000*sin(ANGLE),  yend=RMAX*1000*sin(ANGLE);
+    NAME: PROBE, xstart=RMIN*MM*cos(ANGLE), xend=RMAX*MM*cos(ANGLE),
+                 ystart=RMIN*MM*sin(ANGLE),  yend=RMAX*MM*sin(ANGLE);
 }
 
 REAL THIS_PROBE_PHI=RING_PROBE_PHI_OFFSET;
@@ -154,11 +155,11 @@ ringdef: RINGDEFINITION, HARMONIC_NUMBER=1, LAT_RINIT=R0, LAT_PHIINIT=0,
          BEAM_RINIT=R0+CO_OFFSET, SYMMETRY=1, RFFREQ=1, IS_CLOSED=false,
          MIN_R=R0-2, MAX_R=R0+2;
 
-halfDrift: LOCAL_CARTESIAN_OFFSET, end_position_x=DX_DRIFT,
-                                   end_position_y=DY_DRIFT,
+halfDrift: LOCAL_CARTESIAN_OFFSET, end_position_x=DX_DRIFT*MM,
+                                   end_position_y=DY_DRIFT*MM,
                                    end_normal_x=DXN_DRIFT,
                                    end_normal_y=DYN_DRIFT;
-magnetD: ScalingFFAMagnet, B0=FFA_BD,
+magnetD: ScalingFFAGMagnet, B0=FFA_BD,
                             R0=R0,
                             FIELD_INDEX=FFA_FIELD_INDEX,
                             TAN_DELTA=FFA_TAN_DELTA, 
@@ -171,7 +172,7 @@ magnetD: ScalingFFAMagnet, B0=FFA_BD,
                             MAGNET_END=R0*END_D,
                             HEIGHT=1.,
                             AZIMUTHAL_EXTENT=R0*FFA_D_AZIMUTHAL_EXTENT;
-magnetF: ScalingFFAMagnet, B0=FFA_BF,
+magnetF: ScalingFFAGMagnet, B0=FFA_BF,
                             R0=R0,
                             FIELD_INDEX=FFA_FIELD_INDEX,
                             TAN_DELTA=FFA_TAN_DELTA,
@@ -200,8 +201,8 @@ REAL DX_LATT = R0*sin(D_PHI_LATT);
 REAL DY_LATT = R0*(1-cos(D_PHI_LATT));
 REAL DXN_LATT = cos(D_PHI_LATT);
 REAL DYN_LATT = sin(D_PHI_LATT);
-latticeOffset: LOCAL_CARTESIAN_OFFSET, end_position_x=DX_LATT,
-                                       end_position_y=DY_LATT,
+latticeOffset: LOCAL_CARTESIAN_OFFSET, end_position_x=DX_LATT*MM,
+                                       end_position_y=DY_LATT*MM,
                                        end_normal_x=DXN_LATT,
                                        end_normal_y=DYN_LATT;
 

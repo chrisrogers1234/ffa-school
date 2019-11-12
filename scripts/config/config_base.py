@@ -33,7 +33,7 @@ def get_baseline_substitution(r_inj=4000.0, delta=41.0, r_0=4000.0):
         "__field_index__":7.1, # field index k
         "__max_y_power__":2, # maximum vertical power of the field expansion
         "__neg_extent__":1.0, # negative radial extent
-        "__pos_extent__":1.0, # positive radial extent
+        "__pos_extent__":2.0, # positive radial extent
     }
     return baseline
 
@@ -71,7 +71,7 @@ class Config(object):
             "row_list":None,
             "scan_x_list":[],
             "scan_y_list":[],
-            "x_seed":100.0,
+            "x_seed":50.0,
             "y_seed":20.0,
             "min_delta":0.01,
             "max_delta":500.,
