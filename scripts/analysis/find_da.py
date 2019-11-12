@@ -13,13 +13,25 @@ from plotting import plot_da
 
 
 class DAFinder(object):
+    """
+    DAFinder attempts to find the dynamic aperture by performing a binary search
+    of trajectories offset from the closed orbit. DA is determined to be the
+    trajectory that passes through at least a (user defined) number of probes.
+    """
     def __init__(self, config):
+        """
+        Initialise the DAFinder object
+        - config: configuration object
+        """
         self.closed_orbit_file_name = os.path.join(config.run_control["output_dir"], 
                                                    config.find_closed_orbits["output_file"])
-        self.da_file_name = os.path.join(config.run_control["output_dir"], config.find_da["get_output_file"])
-        self.scan_file_name = os.path.join(config.run_control["output_dir"], config.find_da["scan_output_file"]) 
+        self.da_file_name = os.path.join(config.run_control["output_dir"],
+                                         config.find_da["get_output_file"])
+        self.scan_file_name = os.path.join(config.run_control["output_dir"],
+                                           config.find_da["scan_output_file"]) 
         self.config = config
-        self.run_dir =  os.path.join(config.run_control["output_dir"], config.find_da["run_dir"])
+        self.run_dir =  os.path.join(config.run_control["output_dir"],
+                                     config.find_da["run_dir"])
         self.co_list = self.load_closed_orbits()
         self.ref_hit = None
         self.min_delta = config.find_da["min_delta"]
@@ -32,6 +44,18 @@ class DAFinder(object):
         self.tracking = self.setup()
 
     def get_all_da(self, co_index_list, seed_x, seed_y):
+        """
+        Get the DA
+        - co_index_list: list of indices to find DA for. Each element should be
+                         an index from self.config.substitution_list. Set to 
+                         None to iterate over every element.
+        - seed_x: (float) best guess position offset for trajectory on the 
+                  horizontal DA. Set to None or negative value to disable
+                  horizontal DA finding.
+        - seed_y: (float) best guess position offset for trajectory on the 
+                  vertical DA. Set to None or negative value to disable vertical 
+                  DA finding.
+        """
         if co_index_list == None:
             co_index_list = list(range(len(self.co_list)))
         for i in co_index_list:
@@ -50,6 +74,23 @@ class DAFinder(object):
         os.rename(self.da_file_name+".tmp", self.da_file_name)
 
     def da_all_scan(self, co_index_list, x_list, y_list):
+        """
+        Scan the DA
+        - co_index_list: list of indices to find DA for. Each element should be
+                         an index from self.config.substitution_list. Set to 
+                         None to iterate over every element.
+        - seed_x: list of floats. Each list element is a horizontal position 
+                  offset from the closed orbit; the algorithm will track the
+                  particle and count the number of probes through which the
+                  particle passes.
+        - seed_y: list of floats. Each list element is a vertical position 
+                  offset from the closed orbit; the algorithm will track the
+                  particle and count the number of probes through which the
+                  particle passes.
+
+        The scan routine will generate a 2D grid in x and y. The trajectories
+        will be written to the scan file name.
+        """
         if co_index_list == None:
             co_index_list = list(range(len(self.co_list)))
         for i in co_index_list:
@@ -63,12 +104,18 @@ class DAFinder(object):
         os.rename(self.scan_file_name+".tmp", self.scan_file_name)
 
     def load_closed_orbits(self):
+        """
+        Load the closed orbits file
+        """
         fin = open(self.closed_orbit_file_name)
         co_list = [json.loads(line) for line in fin.readlines()]
         print("Loaded", len(co_list), "closed orbits")
         return co_list
 
     def setup(self):
+        """
+        Perform some setup
+        """
         self.tmp_dir = "./"
         try:
             os.makedirs(self.run_dir)
@@ -88,6 +135,9 @@ class DAFinder(object):
         return hit
 
     def setup_tracking(self, co_element):
+        """
+        Setup the tracking routines
+        """
         subs = co_element["substitutions"]
         for item, key in self.config.find_da["subs_overrides"].items():
             subs[item] = key
@@ -105,6 +155,17 @@ class DAFinder(object):
         self.tracking = OpalTracking(self.run_dir+"/SectorFFAGMagnet.tmp", self.tmp_dir+'/disttest.dat', self.ref_hit, tracking_file, self.opal_exe, self.tmp_dir+"/log")
 
     def new_seed(self):
+        """
+        Generate a new seed for the DA finding routines.
+        * If all previous iterations have passed, then the largest offset is
+          doubled
+        * If all previous iterations have failed, then the smallest offset is
+          halved
+        * If some previous iterations have failed and some have passed, then a
+          binary interplation is performed between the highest passing
+          iteration and the lowest failing iteration
+        Returns the new seed or None if the iteration has finished.
+        """
         if self.data[-1][0] < self.min_delta: # reference run?
             return None
         if self.test_pass(*self.data[-1]): # upper limit is okay; keep going up
@@ -124,9 +185,18 @@ class DAFinder(object):
             return (self.data[i][0]+self.data[i+1][0])/2.
 
     def test_pass(self, seed, hits_list):
+        """
+        Check to see if an iteration passed
+        
+        Returns true if the number of hits in the hits list is greater than the
+        required number of hits.
+        """
         return len(hits_list) > self.required_n_hits
 
     def events_generator(self, co_element, x_list, y_list):
+        """
+        Generates the list of events for the da scan.
+        """
         co_hit = co_element["hits"][0]
         for x in x_list:
             for y in y_list:
@@ -137,6 +207,9 @@ class DAFinder(object):
                 yield {"x":x, "y":y}, a_hit
 
     def da_scan(self, co_element, x_list, y_list):
+        """
+        Do the da scan for a particular element of self.config.substitution_list.
+        """
         self.setup_tracking(co_element)
         gen = self.events_generator(co_element, x_list, y_list)
         self.data = []
@@ -161,6 +234,10 @@ class DAFinder(object):
         self.fout_scan().flush()
 
     def get_da(self, co_element, axis, seed_x):
+        """
+        Do the da finding for a particular element of 
+        self.config.substitution_list
+        """
         is_ref = abs(seed_x) < 1e-6
         self.setup_tracking(co_element)
         self.data = []
@@ -188,6 +265,9 @@ class DAFinder(object):
         return self.data
 
     def fout_scan(self):
+        """
+        Open the scan output file
+        """
         if self.fout_scan_tmp == None:
             file_name = self.scan_file_name+".tmp"
             self.fout_scan_tmp = open(file_name, "w")
@@ -195,6 +275,9 @@ class DAFinder(object):
         return self.fout_scan_tmp
 
     def fout_get(self):
+        """
+        Open the da finder output file
+        """
         if self.fout_get_tmp == None:
             file_name = self.da_file_name+".tmp"
             self.fout_get_tmp = open(file_name, "w")

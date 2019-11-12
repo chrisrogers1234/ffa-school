@@ -1,15 +1,15 @@
 """
 Script to find the closed orbit; drives xboa EllipseClosedOrbitFinder algorithm
 """
-
-
 import time
 import glob
 import numpy
 import sys
 import os
 import json
+
 sys.path.insert(1, "scripts")
+
 from opal_tracking import OpalTracking
 import xboa.common as common
 from xboa.hit import Hit
@@ -19,14 +19,29 @@ from utils import utilities
 import matplotlib
 
 class ClosedOrbitFinder(object):
+    """
+    The ClosedOrbitFinder uses an iterative process to find closed orbits. It
+    tracks the beam through a number of cells. Trajectories undergo approximate 
+    simple harmonic motion, so they make an ellipse in phase space. The centre
+    of the ellipse is used to seed the next iteration in the closed orbit 
+    finding.
+    """
     def __init__(self, config):
+        """
+        Initialise the finder
+        - config: Configuration module
+        """
         self.config = config
         self.out_dir = config.run_control["output_dir"]
         self.run_dir = os.path.join(self.out_dir, "tmp/find_closed_orbits/")
 
     def plot_iteration(self, sub_index, i, iteration, energy):
         """
-        Plot the closed orbit ellipse and the ellipse fit
+        Plot the trajectory of particles at each cell
+        - sub_index: indexes element in the substitution loop (for scans)
+        - i: indexes the iteration in the closed orbit loop
+        - iteration: the closed orbit finder iteration object
+        - energy: reference energy
         """
         fig_index = iteration.plot_ellipse_matplotlib("x", "px", "mm", "MeV/c")
         fig = matplotlib.pyplot.figure(fig_index)
@@ -41,16 +56,12 @@ class ClosedOrbitFinder(object):
 
     def find_closed_orbit(self, sub_index, subs, seed):
         """
-        Find the closed orbit; algorithm is to track turn by turn; fit an ellipse to
-        the tracking; find the centre of the ellipse; repeat until no improvement or
-        10 iterations.
-        - energy: (float) kinetic energy at which the co is calculated
-        - step: (float) step size in tracking
-        - poly_order: (int) order of the polynomial fit to the field map (not used)
-        - smooth_oder: (int) order of smoothing the polynomial fit to the field map
-                    (not used)
-        - seed: (list of 2 floats) [x, px] value to be used as the seed for the next 
-                iteration; px value is ignored, sorry about that.
+        Find the closed orbit
+        - sub_index: indexes element in the substitution loop (for scans)
+        - subs: dictionary of key value pairs for substitution into the lattice
+        - seed: best guess of the closed orbit
+
+        Returns the trajectory of the closed orbit
         """
         max_iterations = self.config.find_closed_orbits["max_iterations"]
         probe = self.config.find_closed_orbits["probe_files"]
@@ -114,6 +125,17 @@ class ClosedOrbitFinder(object):
         return tracking.last[0]
 
     def get_seed(self, results, subs):
+        """
+        Get a new seed
+        - results: list of previous closed orbits
+        - subs: substitutions
+
+        * If results is an empty list, then return the configuration input seed
+        * If results is of length 1, then assume this is a best guess for the
+          next seed
+        * If results is of length >1, then attempt a linear extrapolation of
+          closest previous results to guess the next seed
+        """
         if len(results) == 0:
             config_seed = self.config.find_closed_orbits["seed"].pop(0)
             print("Using config seed", config_seed)
@@ -149,6 +171,12 @@ class ClosedOrbitFinder(object):
         return seed, False
 
     def find_all_closed_orbits(self):
+        """
+        Outer loop of the closed orbit finder
+
+        For each substitution in the config.substitution_list, attempt to find
+        the closed orbit. Write the closed orbits into the output json file.
+        """
         utilities.clear_dir(os.path.join(self.out_dir, "find_closed_orbits"))
 
         fout_name = os.path.join(self.out_dir,

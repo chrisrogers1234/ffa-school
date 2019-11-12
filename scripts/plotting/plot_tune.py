@@ -62,5 +62,5 @@ def main(glob_list):
 
 if __name__ == "__main__":
     main(sys.argv[1:])
-    matplotlib.pyplot.show(False)
-    input("Done")
+    matplotlib.pyplot.show(block=False)
+    input("Done - press Enter to finish")

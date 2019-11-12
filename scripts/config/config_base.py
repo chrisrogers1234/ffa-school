@@ -1,6 +1,12 @@
 import math
 import os
 
+"""
+This configuration will attempt to find the closed orbit, tune and dynamic
+aperture for a single configuration. It is the basic configuration that is used
+for the scripting part of this tutorial.
+"""
+
 def get_baseline_substitution(r_inj=4000.0, delta=41.0, r_0=4000.0):
     dphi = math.tan(math.radians(delta))*math.log(r_inj/r_0)
     baseline = {
@@ -22,7 +28,7 @@ def get_baseline_substitution(r_inj=4000.0, delta=41.0, r_0=4000.0):
         "__mt__":5,
         "__test_probe__":0.0,
         # main magnets
-        "__b_mean__":-0.492,
+        "__b_mean__":0.492,
         "__df_ratio__":-0.36,
         "__d_length__":0.1,
         "__f_length__":0.2,
