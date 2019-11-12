@@ -456,7 +456,7 @@ The config file
 
     scripts/config/config_scan.py
 
-has been set up to make a scan in df ratio. Note that this file uses 
+has been set up to make a scan in d:f ratio. Note that this file uses 
 
     scripts/config/config_base.py
 
@@ -467,6 +467,34 @@ This config file makes a copy of config_base.py using the python inheritance
 mechanism. The scripts have been set up to iterate over each of the elements in 
 config_base.substitution_list, and run the closed orbit finder, tune finder and 
 da finder as appropriate.
+
+Run the scan by doing
+
+    python3 scripts/bin/run_one.py scripts/config/config_scan.py
+
+You should see output starting with
+
+    Using configuration module config.config_scan
+    Using config seed [4000.0, -7.29035424]
+
+and, after a couple of minutes, ending with
+
+    x_n_cells 15
+    x_tune 0.2298781556869427
+    x_tune_rms 0.05539687564488001
+    y_n_cells 15
+    y_tune 0.2527449400248146
+    y_tune_rms 0.05320401315694613
+
+
+The scan is set up to calculate the change in closed orbit and tune. The 
+response of the tune to the df ratio can be plotted by doing
+
+    python3 scripts/plotting/plot_tune.py output/scan/find_tune.json
+
+This should produce a plot showing horizontal tune varying by about 2 % and
+vertical tune varying by about 20 %, with the df ratio varied between -0.42 and
+-0.30.
 
 3. Conclusions
 --------------
