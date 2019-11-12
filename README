@@ -1,48 +1,56 @@
 FFA School Files
 ================
-
 These files form the main source material for the FFA school held at PSI on
-22nd Nov 2019, for tracking an FFA using the OPAL code. This tutorial is
-tested against opal version 2.0.1
+22nd Nov 2019, for tracking an FFA using the OPAL code. This tutorial was
+tested against opal version 2.0.1-1
 
 Contact: chris.rogers@stfc.ac.uk
 
+
 Table of Contents
 -----------------
-1. Setting up the environment
-2. Running a first example
-3. Finding closed orbits
-4. Finding tunes
-5. Finding dynamic aperture
-6. Extended examples
+1. Running a first example
+2. Finding lattice Parameters
+3. Further reading
 
 
+This tutorial will guide you through the process of installing OPAL, running it
+to get tracking output. Later examples use a set of scripts to calculate closed
+orbits and tunes.
 
-1. Setting up the Environment
------------------------------
+For more information, please refer to the OPAL website at
 
-Summary of commands (tested in linux mint 19.1), assuming you have sudo 
-privileges:
+  https://gitlab.psi.ch/OPAL/src/wikis/home
 
-  sudo apt-get install python3-devel python3-pip g++
-  pip3 install numpy matplotlib scipy
-  git clone https://github.com/chrisrogers1234/xboa.git
-  cd xboa
-  sudo python setup.py install
-  cd ..
+1. Running a first example
+--------------------------
 
-Not needing sudo privileges:
+1.1 Prerequisites
+-----------------
+For this part of the tutorial, you should be familiar with interacting with the 
+command line. You should be comfortable with changing directories, listing 
+directories and running executables.
+
+To manipulate lattices, you should be familiar with opening and editing files in 
+a text editor.
+
+There is some setup listed in section 1.2 below for installing OPAL. Note there
+is further setup in section 2.1
+
+1.2 Install OPAL
+----------------
+In order to install
 
   mkdir /path/to/working/dir
   cd /path/to/working/dir
   git clone https://github.com/chrisrogers1234/ffa-school.git
   wget http://amas.web.psi.ch/Downloads/OPAL/package/OPAL-2.0.1-1-x86_64-linux.tar.xz
   tar -xf OPAL-2.0.1-1-x86_64-linux.tar.xz
-  source OPAL-2.0.1-1/etc/profile.d/opal.sh
 
 Before running the examples:
 
   cd /path/to/working/dir
+  source OPAL-2.0.1-1/etc/profile.d/opal.sh
   export OPAL_EXE_PATH=OPAL-2.0.1-1/bin/
   cd ffa-school
   source env.sh
@@ -51,8 +59,8 @@ The env.sh script also checks that the environment is okay and returns an error
 message if it detects missing libraries.
 
 
-2. Running a first example
---------------------------
+1.3 Running a first example
+---------------------------
 There is an example FFA lattice file in the first_run directory. In order to run
 it, first copy the directory to output, so that you don't write into the 
 original directory:
@@ -60,7 +68,7 @@ original directory:
     cp -r first_run output
 
 in this tutorial, all of the output files will be kept in the output directory.
-In this directory there are two files
+In this directory there are two files.
 
     disttest.dat FETS_Ring.opal
 
@@ -118,7 +126,7 @@ The image shows colours (blue through red), which indicate the vertical
 component of the field map and a black wavy line which indicates the trajectory
 of the particle that was tracked through the field.
 
-2.1 Input Particle Control
+1.4 Input Particle Control
 --------------------------
 Let's try changing the inputs to our tracking simulation and see how the output
 changes.
@@ -138,7 +146,7 @@ Here "beta gamma" is the (momentum component)/mass, i.e.,
 
         (relativistic beta)*(relativistic gamma)
 
-Try increasing the initial radial position by to 4.10 m
+Try increasing the initial radial position to 4.10 m
 
 disttest.dat:
 1
@@ -149,9 +157,9 @@ Rerun opal and make the plot of the orbit again.
     ${OPAL_EXE_PATH}/opal FETS_Ring.opal
     python3 ../../scripts/plotting/plot_orbit.py output/first_run/FETS_Ring-trackOrbit.dat
 
-and the orbitting particle can be seen to oscillate.
+and the orbiting particle can be seen to oscillate.
 
-2.2 The Lattice file
+1.5 The Lattice file
 --------------------
 Open FETS_Ring.opal in a text editor. You will see that the file is about 200 
 lines long:
@@ -196,7 +204,11 @@ Try changing some other things in the input file:
 
 You can always recover the original files by copying from ffa-school/first_run
 
-3. Finding Lattice Parameters
+
+
+
+-----------------------------
+2. Finding Lattice Parameters
 -----------------------------
 It is useful to be able to find lattice parameters based on the tracking 
 routines. In this section, we will run a series of scripts to find the closed
@@ -209,8 +221,34 @@ the closed orbit, then the tune, and then the dynamic aperture.
 Note that these scripts are included as a convenience; they are not part of the
 OPAL core library.
 
-3.1 Run the scripts
+2.1.1 Prerequisites
 -------------------
+To set up the tutorial, familiarity with installing software in your operating
+system is an advantage. 
+
+For later examples, knowledge of python3 is an advantage.
+
+2.1.2 Install Required Packages
+-----------------------------
+Summary of commands (tested in linux mint 19.1), assuming you have sudo 
+privileges:
+
+  # you will need python3 and the standard python3 scientific libraries
+  sudo apt-get install python3-devel python3-pip g++
+  pip3 install numpy matplotlib scipy
+  # you will also need the xboa library, which provides a backend for analysis
+  # tools
+  cd /path/to/working/dir
+  wget micewww.pp.rl.ac.uk/maus/xboa/xboa-0.17.0/xboa-0.17.0.tar.gz
+  tar -xzf xboa-0.17.0.tar.gz
+  cd xboa-0.17.0
+  sudo python setup.py install
+  cd ..
+  cd ffa-school
+
+
+2.2.1 Running the scripts
+-------------------------
 To have a go at running the scripts, try
 
     python3 scripts/bin/run_one.py scripts/config/config_base.py
@@ -227,12 +265,17 @@ and ending with
 When the scripts run, they make a directory output/base which contains output
 files.
 
-3.1.1 Closed Orbit
+2.2.2 Closed Orbit
 ------------------
 The closed orbit finder uses an iterative process to find closed orbits. It
 tracks the beam through a number of cells. Trajectories undergo approximate 
-simple harmonic motion, so they make an ellipse in phase space. The centre of 
-the ellipse is used to seed the next iteration in the closed orbit finding.
+simple harmonic motion. By plotting the trajectory of each particle at PROBE
+elements placed at the end of each cell, the trajectory of the tracks can be
+studied. Under simple harmonic motion they make an ellipse in phase space, where
+the centre of the ellipse is on the closed orbit. Because non-linearities in the
+field make the motion not perfectly elliptical, an iterative approach is taken
+where the centre of the best fit ellipse is used to seed the next 
+iteration in the closed orbit finding.
 
 The first ellipse and last ellipse is plotted in 
 
@@ -250,7 +293,7 @@ There are two files;
 The closed orbit is stored in temporary cache output/base/find_closed_orbit.out
 which is formatted in json text format.
 
-3.1.2 Tune
+2.2.3 Tune
 ----------
 The closed orbit is loaded and used as the basis for the tune calculation.
 Particles are displaced from the nominal closed orbit by 1 mm and tracked; the
@@ -275,7 +318,7 @@ respectively. The vertical phase space ellipse and cholesky decomposition is in
 
 respectively.
 
-3.1.3 Dynamic Aperture
+2.2.4 Dynamic Aperture
 ----------------------
 The dynamic aperture (DA) is found by tracking trajectories displaced from the 
 closed orbit; if the trajectory passes through at least 50 cells, it is 
@@ -313,7 +356,7 @@ initially displaced only in the y direction, there is some motion in the x x'
 plane.
 
 
-3.2 Variable Scans
+2.3 Variable Scans
 ------------------
 These scripts work by changing variables in the OPAL lattice file and the
 distribution file. During each calculation, the temporary OPAL lattice file and
@@ -329,7 +372,7 @@ for the closed orbit, tune and DA calculation respectively. The file
 
 is used as a source for the lattice file.
 
-3.2.1 Config file
+2.3.1 Config file
 -----------------
 The config file determines the basic parameters of the lattice file. The config
 file is written in the python programming language. Make a copy of the
@@ -352,6 +395,17 @@ Try setting, at line 25,
 
 Note the syntax - this is an element in a python dictionary, so a comma is
 required at the end of the line (before the # sign which marks a comment).
+
+The Config object also contains a number of dictionaries (python hash tables)
+that control different aspects of the operation of the code.
+
+* self.find_closed_orbits controls the ClosedOrbitFinder
+* self.find_tune controls the tune finder
+* self.find_da controls the dynamic aperture finder
+* self.substitution_list holds a list of dictionaries for scanning (see 
+  section 3.3)
+* self.run_control controls the overall execution of the script
+* self.tracking controls the tracking
 
 Before running, it may also be useful to disable the tune and DA calculation,
 and to change the output directory. This can be achieved by adjusting the python 
@@ -388,24 +442,21 @@ fail if the initial particle is outside of the DA of the lattice so that an
 elliptical trajectory is never formed; this risk can be mitigated by only
 making relatively small changes to the lattice file.
 
-3.2.2 Scan
+2.3.2 Scan
 ----------
 The config file
 
-    scripts/config/config_energy_scan.py
+    scripts/config/config_scan.py
 
-has been set up to make a scan in energy. Note that, because this file uses 
+has been set up to make a scan in df ratio. Note that this file uses 
 
     scripts/config/config_base.py
 
-as a base, if you have changed config_base.py the script may not operate as
+as a base. If you have changed config_base.py the script may not operate as
 expected. 
 
 This config file makes a copy of config_base.py using the python inheritance 
 mechanism. The scripts have been set up to iterate over each of the elements in 
 config_base.substitution_list, and run the closed orbit finder, tune finder and 
 da finder as appropriate.
-
-
-
 

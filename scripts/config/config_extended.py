@@ -3,8 +3,8 @@ import os
 from . import config_base
 
 """
-This is an example of an extended configuration. Note that use of this
-configuration may require installation of PyROOT.
+This is an example of an extended configuration. The parameters below can be
+used to manipulate RF and closed orbit bumpers for e.g. injection studies.
 """
 
 
@@ -73,8 +73,6 @@ class Config(object):
     def __init__(self):
         self.find_closed_orbits = {
             "seed":[[4000.90128551, -7.29035424]], # 2.55 MeV
-            #"seed":[[4700.60937663, 0.33732634]], #[4704.59987005   48.47584565/239] 30 MeV
-#[[4042.10640218, -8.47136893],], # 3 MeV
             "output_file":"find_closed_orbit",
             "subs_overrides":{"__n_turns__":5.1, "__no_field_maps__":""},
             "root_batch":0,
@@ -114,14 +112,9 @@ class Config(object):
         self.substitution_list = [get_baseline_substitution()]
         
         self.run_control = {
-            "find_closed_orbits":False,
-            "find_tune":False,
+            "find_closed_orbits":True,
+            "find_tune":True,
             "find_da":True,
-            "find_rf_parameters":False,
-            "find_bump_parameters":False,
-            "track_beam":False,
-            "track_bump":False,
-            "find_fixed_frequency_rf":False,
             "clean_output_dir":False,
             "output_dir":os.path.join(os.getcwd(), "output/extended"),
         }

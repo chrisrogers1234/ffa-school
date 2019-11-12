@@ -1,4 +1,6 @@
-
+"""
+This program runs the various subroutines for the FFA school
+"""
 
 import os
 import shutil
@@ -13,6 +15,9 @@ import analysis.find_da
 from utils import utilities
 
 def get_config():
+    """
+    Load a configuration file specified on the command line
+    """
     if len(sys.argv) < 2:
         print("Usage: python /path/to/run_one.py /path/to/config.py")
         sys.exit(1)
@@ -25,6 +30,11 @@ def get_config():
     return config
 
 def output_dir(config):
+    """
+    Setup the output directory
+    - if run_control["clean_output_dir"] is set to true, delete the existing
+      directory first
+    """
     output_dir = config.run_control["output_dir"]
     if config.run_control["clean_output_dir"]:
         try:
@@ -36,10 +46,10 @@ def output_dir(config):
     except OSError:
         pass
 
-def master_substitutions(config):
-    xboa.common.substitute(config.tracking["master_file"], config.tracking["lattice_file"], config.master_substitutions)
-
 def main():
+    """
+    The main program loop
+    """
     config = get_config()
     output_dir(config)
     if config.run_control["find_closed_orbits"]:

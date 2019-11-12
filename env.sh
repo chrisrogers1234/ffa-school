@@ -1,10 +1,20 @@
 #!/bin/bash
+
+fail=0 # flag whether the setup was okay
+
+######### Add scripts directory to python path #############
+
 scripts=`pwd`/scripts
 echo "Adding ${scripts} to python path"
-export PYTHONPATH=$PYTHONPATH:${scripts}
+if [[ -d ${scripts} ]]; then
+    export PYTHONPATH=$PYTHONPATH:${scripts}
+else
+    echo "ERROR: Could not find ${scripts} directory for \$PYTHONPATH"
+    echo "ERROR: 'env.sh' should be sourced from ffa-school root directory"
+    fail=1
+fi
 
 ######### Check environment is okay #############
-fail=0
 
 python3 --version >& /dev/null
 if [ $? -ne 0 ]; then
@@ -23,7 +33,7 @@ do
     fi
 done
 
-python3 -c "import config.config_base"
+python3 -c "import config.config_base" >& /dev/null
 if [ $? -ne 0 ]; then
     echo "ERROR: Failed to setup FFA school files. \${PYTHONPATH} is"
     echo "  ${PYTHONPATH}"
@@ -32,7 +42,8 @@ fi
 
 echo "" | ${OPAL_EXE_PATH}/opal >& /dev/null
 if [ $? -ne 0 ]; then
-    echo "ERROR: Failed to run opal executable, which was expected at \${OPAL_EXE_PATH}/opal"
+    echo "ERROR: Failed to run opal executable, which was expected at"
+    echo "       \${OPAL_EXE_PATH}/opal which evaluates as '${OPAL_EXE_PATH}/opal'"
     fail=1
 fi
 

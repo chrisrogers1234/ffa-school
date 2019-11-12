@@ -1,3 +1,7 @@
+"""
+Utility functions
+"""
+
 import copy
 import os
 import numpy
