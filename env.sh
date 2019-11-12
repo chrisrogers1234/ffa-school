@@ -2,6 +2,21 @@
 
 fail=0 # flag whether the setup was okay
 
+######### Source OPAL environment ##########################
+
+if [[ -z ${OPAL_BUILD_PATH} ]]; then
+    echo "ERROR: Failed to find \${OPAL_BUILD_PATH}"
+    fail=1
+fi
+
+source ${OPAL_BUILD_PATH}/etc/profile.d/opal.sh
+if [ $? -ne 0 ]; then
+    echo "ERROR: Failed to source opal.sh"
+    fail=1
+fi
+
+export OPAL_EXE_PATH=${OPAL_BUILD_PATH}/bin/
+
 ######### Add scripts directory to python path #############
 
 scripts=`pwd`/scripts
@@ -15,6 +30,8 @@ else
 fi
 
 ######### Check environment is okay #############
+
+echo "Checking environment"
 
 python3 --version >& /dev/null
 if [ $? -ne 0 ]; then

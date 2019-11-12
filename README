@@ -39,7 +39,8 @@ is further setup in section 2.1
 
 1.2 Install OPAL
 ----------------
-In order to install
+In order to run the examples, you need to download them and also install OPAL
+itself.
 
   mkdir /path/to/working/dir
   cd /path/to/working/dir
@@ -47,12 +48,26 @@ In order to install
   wget http://amas.web.psi.ch/Downloads/OPAL/package/OPAL-2.0.1-1-x86_64-linux.tar.xz
   tar -xf OPAL-2.0.1-1-x86_64-linux.tar.xz
 
-Before running the examples:
+In order to make plots, you will need python3 and the standard python3 
+scientific libraries
+
+  sudo apt-get install python3-devel python3-pip g++
+  pip3 install numpy matplotlib scipy
+
+I also use xboa library as a backend
 
   cd /path/to/working/dir
-  source OPAL-2.0.1-1/etc/profile.d/opal.sh
-  export OPAL_EXE_PATH=OPAL-2.0.1-1/bin/
+  wget http://micewww.pp.rl.ac.uk/maus/xboa/xboa-0.17.0/xboa-0.17.0.tar.gz
+  tar -xzf xboa-0.17.0.tar.gz
+  cd xboa-0.17.0
+  sudo python setup.py install
+  cd ..
   cd ffa-school
+
+Before running the examples, you will need to set a few environment variables
+
+  cd /path/to/working/dir/OPAL-2.0.1-1/
+  export OPAL_BUILD_PATH=/path/to/working/dir/OPAL-2.0.1-1/
   source env.sh
 
 The env.sh script also checks that the environment is okay and returns an error
@@ -227,25 +242,6 @@ To set up the tutorial, familiarity with installing software in your operating
 system is an advantage. 
 
 For later examples, knowledge of python3 is an advantage.
-
-2.1.2 Install Required Packages
------------------------------
-Summary of commands (tested in linux mint 19.1), assuming you have sudo 
-privileges:
-
-  # you will need python3 and the standard python3 scientific libraries
-  sudo apt-get install python3-devel python3-pip g++
-  pip3 install numpy matplotlib scipy
-  # you will also need the xboa library, which provides a backend for analysis
-  # tools
-  cd /path/to/working/dir
-  wget micewww.pp.rl.ac.uk/maus/xboa/xboa-0.17.0/xboa-0.17.0.tar.gz
-  tar -xzf xboa-0.17.0.tar.gz
-  cd xboa-0.17.0
-  sudo python setup.py install
-  cd ..
-  cd ffa-school
-
 
 2.2.1 Running the scripts
 -------------------------
