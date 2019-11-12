@@ -51,7 +51,6 @@ You need to install the FFA school files
   cd ~/path/to/working/dir
   git clone https://github.com/chrisrogers1234/ffa-school.git
 
-
 In order to make plots, you will need python3 and the standard python3 
 scientific libraries
 
@@ -134,7 +133,8 @@ the FFA magnets.
 There is a script to plot the field map, with the closed orbit superimposed, in
 the scripts directory. Try running the plot_orbit.py script
 
-    python3 ../../scripts/plotting/plot_orbit.py output/first_run/FETS_Ring-trackOrbit.dat
+    cd ../../
+    python3 scripts/plotting/plot_orbit.py output/first_run/FETS_Ring-trackOrbit.dat
 
 You should get output ending in
 
@@ -179,8 +179,10 @@ disttest.dat:
 
 Rerun opal and make the plot of the orbit again.
 
+    cd output/first_run/
     ${OPAL_EXE_PATH}/opal FETS_Ring.opal
-    python3 ../../scripts/plotting/plot_orbit.py output/first_run/FETS_Ring-trackOrbit.dat
+    cd ../../
+    python3 scripts/plotting/plot_orbit.py output/first_run/FETS_Ring-trackOrbit.dat
 
 and the orbiting particle can be seen to oscillate.
 
@@ -216,8 +218,10 @@ Try changing the input file. Try changing the FFA_B_MEAN parameter to 0.400 [T].
 This will change the mean field on the reference radius, 4.0 metres in this 
 example. Now run the simulation and make the plot.
 
+    cd output/first_run/
     ${OPAL_EXE_PATH}/opal FETS_Ring.opal
-    python3 ../../scripts/plotting/plot_orbit.py output/first_run/FETS_Ring-trackOrbit.dat
+    cd ../../
+    python3 scripts/plotting/plot_orbit.py output/first_run/FETS_Ring-trackOrbit.dat
 
 The orbiting particle is (almost) back on a closed orbit.
 
@@ -228,8 +232,6 @@ Try changing some other things in the input file:
 * Change the scale of the field map by editing the DUMPFIELDS command.
 
 You can always recover the original files by copying from ffa-school/first_run
-
-
 
 
 -----------------------------
@@ -259,12 +261,12 @@ To have a go at running the scripts, try
 
     python3 scripts/bin/run_one.py scripts/config/config_base.py
 
-You should get output starting with
+Now take a cup of tea or coffee. You should get output starting with
 
     Using configuration module config.config_base
     Using config seed [4100.0, -7.29035424]
 
-and ending with
+and after a couple of minutes, ending with
 
     Done find da
 
@@ -296,7 +298,7 @@ There are two files;
   the particle at the end of the closed orbit iterations. The closed orbit is
   found at an accuracy of a few micron and a few keV/c.
 
-The closed orbit is stored in temporary cache output/base/find_closed_orbit.out
+The closed orbit is stored in temporary cache output/base/find_closed_orbit.json
 which is formatted in json text format.
 
 2.2.3 Tune
@@ -380,7 +382,7 @@ is used as a source for the lattice file.
 
 2.3.1 Config file
 -----------------
-The config file determines the basic parameters of the lattice file. The config
+The config file determines the basic parameters of the lattice. The config
 file is written in the python programming language. Make a copy of the
 config_base file
 
@@ -465,4 +467,12 @@ This config file makes a copy of config_base.py using the python inheritance
 mechanism. The scripts have been set up to iterate over each of the elements in 
 config_base.substitution_list, and run the closed orbit finder, tune finder and 
 da finder as appropriate.
+
+3. Conclusions
+--------------
+This has been a brief overview of using OPAL for tracking; and using some 
+scripts to calculate lattice parameters and drive parameter scans.
+
+
+
 
