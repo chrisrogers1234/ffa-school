@@ -34,8 +34,7 @@ directories and running executables.
 To manipulate lattices, you should be familiar with opening and editing files in 
 a text editor.
 
-There is some setup listed in section 1.2 below for installing OPAL. Note there
-is further setup in section 2.1
+There is some setup listed in section 1.2 below for installing OPAL.
 
 1.2 Install OPAL
 ----------------
@@ -248,12 +247,10 @@ the closed orbit, then the tune, and then the dynamic aperture.
 Note that these scripts are included as a convenience; they are not part of the
 OPAL core library.
 
-2.1.1 Prerequisites
+2.1 Prerequisites
 -------------------
-To set up the tutorial, familiarity with installing software in your operating
-system is an advantage. 
-
-For later examples, knowledge of python3 is an advantage.
+For this section, knowledge of python, while not essential, may be useful. The
+scripts listed below use python3 to drive OPAL.
 
 2.2.1 Running the scripts
 -------------------------
