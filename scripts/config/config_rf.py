@@ -41,7 +41,7 @@ def get_baseline_substitution(r_inj=4000.0, delta=41.0, r_0=4000.0):
         "__neg_extent__":1.0,
         "__pos_extent__":2.0,
         # rf
-        "__cavity__":"no_cavity",
+        "__cavity__":"hard_cavity",
         "__rf_voltage__":0.,
         "__rf_phase__":1.90862003999-math.radians(20), # [rad]
         "__rf_freq_0__":0.93656519779, # [MHz]
@@ -50,22 +50,6 @@ def get_baseline_substitution(r_inj=4000.0, delta=41.0, r_0=4000.0):
         "__rf_freq_3__":0.,
         "__no_field_maps__":"// ", # set to "" to enable field maps; set to "// " to comment them
         "__cavity_angle__":delta,
-        # bump magnets
-        "__bump_length__":0.1,
-        "__bump_fringe__":0.1,
-        "__bump_width__":1.0,
-        "__bump_offset__":0.0, # radial offset, m
-        "__bump_angle__":delta, # angular tilt of bump cavity
-        "__phi_foil_probe__":3.2,
-        "__phi_bump_1__":+0.35,
-        "__phi_bump_2__":-0.65,
-        "__phi_bump_3__":-1.3,
-        "__phi_bump_4__":-1.65,
-        "__bump_field_1__":0.0, #-0.153622540713,
-        "__bump_field_2__":0.0, #+0.0,
-        "__bump_field_3__":0.0, #+0.157288331088,
-        "__bump_field_4__":0.0, #-0.20832864219,
-        "__septum_field__":0.0, #-0.20832864219,
     }
     return baseline
 
@@ -116,14 +100,14 @@ class Config(object):
             "find_tune":True,
             "find_da":True,
             "clean_output_dir":False,
-            "output_dir":os.path.join(os.getcwd(), "output/extended"),
+            "output_dir":os.path.join(os.getcwd(), "output/rf"),
         }
 
         self.tracking = {
-            "mpi_exe":None, #os.path.expandvars("${OPAL_ROOT_DIR}/external/install/bin/mpirun"),
+            "mpi_exe":None, #os.path.expandvars("${OPAL_EXE_PATH}/mpirun"),
             "beam_file_out":"disttest.dat",
             "n_cores":4,
-            "lattice_file":os.path.join(os.getcwd(), "lattice/FETS_Ring_extended.in"),
+            "lattice_file":os.path.join(os.getcwd(), "lattice/FETS_Ring_rf.in"),
             "lattice_file_out":"SectorFFAMagnet.tmp",
             "opal_path":os.path.expandvars("${OPAL_EXE_PATH}/opal"),
             "tracking_log":"log",

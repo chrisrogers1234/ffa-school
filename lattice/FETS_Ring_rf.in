@@ -42,24 +42,7 @@ REAL FFA_RF_FREQ_1=__rf_freq_1__; // [MHz/ns^1]
 REAL FFA_RF_FREQ_2=__rf_freq_2__; // [MHz/ns^2]
 REAL FFA_RF_FREQ_3=__rf_freq_3__; // [MHz/ns^3]
 REAL CAVITY_ANGLE=__cavity_angle__; // [rad]
-// also __cavity__; // soft_cavity, hard_cavity, radial_cavity, no_cavity
-
-///////////// BUMP MAGNETS ////////////////////
-REAL BUMP_LENGTH=__bump_length__; // [m]
-REAL BUMP_RADIAL_OFFSET=__bump_offset__; // [m]
-REAL PHI_FOIL_PROBE=__phi_foil_probe__; // [fraction of cell length]
-REAL PHI_BUMP_1=__phi_bump_1__; // [fraction of cell length]
-REAL PHI_BUMP_2=__phi_bump_2__; // [fraction of cell length]
-REAL PHI_BUMP_3=__phi_bump_3__; // [fraction of cell length]
-REAL PHI_BUMP_4=__phi_bump_4__; // [fraction of cell length]
-REAL BUMP_FIELD_1=__bump_field_1__; // [kGauss]
-REAL BUMP_FIELD_2=__bump_field_2__; // [kGauss]
-REAL BUMP_FIELD_3=__bump_field_3__; // [kGauss]
-REAL BUMP_FIELD_4=__bump_field_4__; // [kGauss]
-REAL BUMP_WIDTH=__bump_width__; // [m]
-REAL BUMP_ANGLE=__bump_angle__; // [degree]
-REAL BUMP_FRINGE=__bump_fringe__; // [fraction of bump_length]
-REAL SEPTUM_FIELD=__septum_field__; // [T]
+// also __cavity__; // hard_cavity, no_cavity
 
 /////////////////// GENERAL ////////////////////////////////////
 
@@ -68,7 +51,7 @@ REAL N_CELLS=15; // NOTE!! If you change the number of cells, you must *by hand*
                  // change the number of ringprobes
 REAL FFA_CELL_LENGTH=2*PI/N_CELLS;
 REAL CO_OFFSET = -1*R0;
-REAL MILLIMETRE = 1.0;
+REAL MILLIMETRE = 1000.0;
 REAL RADIANS = PI/180;
 REAL RMIN=R0-2.0;
 REAL RMAX=R0+2.0;
@@ -253,7 +236,7 @@ halfDrift: LOCAL_CARTESIAN_OFFSET, end_position_x=DX_DRIFT*MILLIMETRE,
                                    end_position_y=DY_DRIFT*MILLIMETRE,
                                    end_normal_x=DXN_DRIFT,
                                    end_normal_y=DYN_DRIFT;
-magnetD: ScalingFFAMagnet, B0=FFA_BD,
+magnetD: ScalingFFAGMagnet, B0=FFA_BD,
                             R0=R0,
                             FIELD_INDEX=FFA_FIELD_INDEX,
                             TAN_DELTA=FFA_TAN_DELTA, 
@@ -266,7 +249,7 @@ magnetD: ScalingFFAMagnet, B0=FFA_BD,
                             MAGNET_END=R0*END_D,
                             HEIGHT=1.,
                             AZIMUTHAL_EXTENT=R0*FFA_D_AZIMUTHAL_EXTENT;
-magnetF: ScalingFFAMagnet, B0=FFA_BF,
+magnetF: ScalingFFAGMagnet, B0=FFA_BF,
                             R0=R0,
                             FIELD_INDEX=FFA_FIELD_INDEX,
                             TAN_DELTA=FFA_TAN_DELTA,
@@ -292,188 +275,15 @@ hard_cavity_drift: LOCAL_CARTESIAN_OFFSET,
 hard_rf_cavity: VARIABLE_RF_CAVITY, PHASE_MODEL="RF_PHASE", AMPLITUDE_MODEL="RF_AMPLITUDE", 
            FREQUENCY_MODEL="RF_FREQUENCY", L=0.100*MILLIMETRE, HEIGHT=1.*MILLIMETRE,
            WIDTH=3.*MILLIMETRE;
-soft_cavity_drift_tilt: LOCAL_CARTESIAN_OFFSET,
-              end_position_x=-0.100*MILLIMETRE, end_position_y=0.*MILLIMETRE,
-              end_normal_x=COS_CAV, end_normal_y=SIN_CAV; // step back half gap and then rotate
-soft_rf_cavity: VARIABLE_RF_CAVITY_FRINGE_FIELD, PHASE_MODEL="RF_PHASE", AMPLITUDE_MODEL="RF_AMPLITUDE", 
-           FREQUENCY_MODEL="RF_FREQUENCY", L=0.200, HEIGHT=1., WIDTH=3.,
-           CENTRE_LENGTH=0.100, END_LENGTH=0.010, CAVITY_CENTRE=0.100, MAX_ORDER=4;
-soft_cavity_drift_untilt: LOCAL_CARTESIAN_OFFSET,
-              end_position_x=-0.200*MILLIMETRE, end_position_y=0.*MILLIMETRE,
-              end_normal_x=COS_CAV, end_normal_y=-SIN_CAV; // go back to start of cavity and then rotate back
-soft_cavity_drift_back: LOCAL_CARTESIAN_OFFSET,
-              end_position_x=0.100*MILLIMETRE, end_position_y=0.*MILLIMETRE,
-              end_normal_x=1.0, end_normal_y=0.0; // go to middle of cavity
 
-soft_cavity: Line = (soft_cavity_drift_tilt, soft_rf_cavity, 
-                     soft_cavity_drift_back, soft_cavity_drift_untilt);
+hard_cavity: Line = (hard_cavity_drift, hard_rf_cavity);
 
-no_cavity: Line = (soft_cavity_drift_tilt, soft_cavity_drift_untilt);
+no_cavity_drift: LOCAL_CARTESIAN_OFFSET,
+              end_position_x=0., end_position_y=0.,
+              end_normal_x=1., end_normal_y=0.; // NULL operation
 
-///////////////////// RADIAL CAVITY ///////////////////////////
 
-REAL RADIAL_RF_F=FFA_RF_FREQ_0;
-radial_cavity_drift: LOCAL_CARTESIAN_OFFSET,
-              end_position_x=-0.050*MILLIMETRE, end_position_y=0.*MILLIMETRE,
-              end_normal_x=1.0, end_normal_y=0.0; // step back half gap and then rotate
-//radial_rf_cavity_0: RADIAL_PROFILE_RF_CAVITY, PHASE=FFA_RF_PHASE+0.,
-//                  FREQUENCY=RADIAL_RF_F, L=100.0, HEIGHT=100., PROFILE_FILENAME="radial_voltage_dependence_0.out";
-//radial_rf_cavity_1: RADIAL_PROFILE_RF_CAVITY, PHASE=FFA_RF_PHASE+0.25,
-//                  FREQUENCY=RADIAL_RF_F, L=100.0, HEIGHT=100., PROFILE_FILENAME="radial_voltage_dependence_1.out";
-//radial_rf_cavity_2: RADIAL_PROFILE_RF_CAVITY, PHASE=FFA_RF_PHASE+0.5,
-//                  FREQUENCY=RADIAL_RF_F, L=100.0, HEIGHT=100., PROFILE_FILENAME="radial_voltage_dependence_2.out";
-//radial_rf_cavity_3: RADIAL_PROFILE_RF_CAVITY, PHASE=FFA_RF_PHASE+0.75,
-//                  FREQUENCY=RADIAL_RF_F, L=100.0, HEIGHT=100., PROFILE_FILENAME="radial_voltage_dependence_3.out";
-//
-//radial_cavity: Line = (
-//    radial_cavity_drift, radial_rf_cavity_0, radial_cavity_drift
-//  , radial_cavity_drift, radial_rf_cavity_1, radial_cavity_drift
-//  , radial_cavity_drift, radial_rf_cavity_2, radial_cavity_drift
-//  , radial_cavity_drift, radial_rf_cavity_3, radial_cavity_drift
-//);
-
-/////////////////////// BUMP /////////////////////////////////
-
-REAL PHI_FOIL_PROBE_RAD=PHI_FOIL_PROBE*FFA_CELL_LENGTH;
-value, {PHI_FOIL_PROBE_RAD};
-
-FoilProbe: PROBE, xstart=RMIN*1000*cos(PHI_FOIL_PROBE_RAD),  xend=RMAX*1000*cos(PHI_FOIL_PROBE_RAD),  
-                  ystart=RMIN*1000*sin(PHI_FOIL_PROBE_RAD),  yend=RMAX*1000*sin(PHI_FOIL_PROBE_RAD);
-
-REAL BUMP_FRINGE_LENGTH=BUMP_FRINGE*BUMP_LENGTH;
-REAL BUMP_ANGLE_RAD=BUMP_ANGLE/180*PI;
-
-magnetBump1: MultipoleT, L=BUMP_LENGTH,
-                 RFRINGE=BUMP_FRINGE_LENGTH,
-                 LFRINGE=BUMP_FRINGE_LENGTH,
-                 HAPERT=BUMP_WIDTH,
-                 VAPERT=0.2,
-                 ANGLE=0.0,
-                 TP={ BUMP_FIELD_1 },
-                 BBLENGTH=2*BUMP_LENGTH,
-                 MAXFORDER=3,
-                 MAXXORDER=3,
-                 VARRADIUS=FALSE;
-
-magnetBump2: MultipoleT, L=BUMP_LENGTH,
-                 RFRINGE=BUMP_FRINGE_LENGTH,
-                 LFRINGE=BUMP_FRINGE_LENGTH,
-                 HAPERT=BUMP_WIDTH,
-                 VAPERT=0.2,
-                 ANGLE=0.0,
-                 TP={ BUMP_FIELD_2 },
-                 BBLENGTH=2*BUMP_LENGTH,
-                 MAXFORDER=3,
-                 MAXXORDER=3,
-                 VARRADIUS=FALSE;
-
-magnetBump3: MultipoleT, L=BUMP_LENGTH,
-                 RFRINGE=BUMP_FRINGE_LENGTH,
-                 LFRINGE=BUMP_FRINGE_LENGTH,
-                 HAPERT=BUMP_WIDTH,
-                 VAPERT=0.2,
-                 ANGLE=0.0,
-                 TP={ BUMP_FIELD_3 },
-                 BBLENGTH=2*BUMP_LENGTH,
-                 MAXFORDER=3,
-                 MAXXORDER=3,
-                 VARRADIUS=FALSE;
-
-magnetBump4: MultipoleT, L=BUMP_LENGTH,
-                 RFRINGE=BUMP_FRINGE_LENGTH,
-                 LFRINGE=BUMP_FRINGE_LENGTH,
-                 HAPERT=BUMP_WIDTH,
-                 VAPERT=0.2,
-                 ANGLE=0.0,
-                 TP={ BUMP_FIELD_4 },
-                 BBLENGTH=2*BUMP_LENGTH,
-                 MAXFORDER=3,
-                 MAXXORDER=3,
-                 VARRADIUS=FALSE;
-
-REAL SEPTUM_LENGTH=0.15; // m
-REAL SEPTUM_FRINGE_LENGTH=0.1*SEPTUM_LENGTH; // m
-REAL SEPTUM_WIDTH=0.1; // m
-REAL SEPTUM_RADIUS=3.9; // m
-REAL SEPTUM_OFFSET_DISTANCE=0.05; // m
-REAL PHI_SEPTUM=PHI_BUMP_2+0.2;
-
-magnetSeptum: MultipoleT, L=SEPTUM_LENGTH,
-              RFRINGE=SEPTUM_FRINGE_LENGTH,
-              LFRINGE=SEPTUM_FRINGE_LENGTH,
-              HAPERT=SEPTUM_WIDTH,
-              VAPERT=0.2,
-              ANGLE=0.0,
-              TP={ SEPTUM_FIELD },
-              BBLENGTH=2*SEPTUM_LENGTH,
-              MAXFORDER=3,
-              MAXXORDER=3,
-              VARRADIUS=FALSE;
-
-bump_drift_tilt: LOCAL_CARTESIAN_OFFSET,
-              end_position_x=0.0,
-              end_position_y=0.0,
-              end_normal_x=cos(BUMP_ANGLE_RAD),
-              end_normal_y=sin(BUMP_ANGLE_RAD); // tilt the bump magnet
-bump_drift_back: LOCAL_CARTESIAN_OFFSET,
-              end_position_x=-4*BUMP_LENGTH*MILLIMETRE,
-              end_position_y=0.0,
-              end_normal_x=0.0,
-              end_normal_y=0.0; // go back to start of magnet
-bump_drift_untilt: LOCAL_CARTESIAN_OFFSET,
-              end_position_x=0.0,
-              end_position_y=0.0,
-              end_normal_x=cos(BUMP_ANGLE_RAD),
-              end_normal_y=-sin(BUMP_ANGLE_RAD); // untilt the bump magnet
-
-REAL BUMP_CELL_OFFSET = 1.25;
-REAL PHI_BUMP_1_RAD=(BUMP_CELL_OFFSET+PHI_BUMP_1)*FFA_CELL_LENGTH;
-bump_drift_1: LOCAL_CARTESIAN_OFFSET,
-              end_position_x=R0*sin(PHI_BUMP_1_RAD)*MILLIMETRE,
-              end_position_y=R0*(1-cos(PHI_BUMP_1_RAD))*MILLIMETRE,
-              end_normal_x=cos(PHI_BUMP_1_RAD),
-              end_normal_y=sin(PHI_BUMP_1_RAD); // drift to next bump magnet
-
-REAL PHI_BUMP_2_RAD=(-PHI_BUMP_1+PHI_BUMP_2)*FFA_CELL_LENGTH;
-bump_drift_2: LOCAL_CARTESIAN_OFFSET,
-              end_position_x=R0*sin(PHI_BUMP_2_RAD)*MILLIMETRE+BUMP_RADIAL_OFFSET*sin(PHI_BUMP_2_RAD)*MILLIMETRE,
-              end_position_y=R0*(1-cos(PHI_BUMP_2_RAD))*MILLIMETRE-BUMP_RADIAL_OFFSET*cos(PHI_BUMP_2_RAD)*MILLIMETRE,
-              end_normal_x=cos(PHI_BUMP_2_RAD),
-              end_normal_y=sin(PHI_BUMP_2_RAD); // drift to next bump magnet
-
-REAL PHI_BUMP_3_RAD=(-PHI_BUMP_2+PHI_BUMP_3)*FFA_CELL_LENGTH;
-bump_drift_3: LOCAL_CARTESIAN_OFFSET,
-              end_position_x= (R0+BUMP_RADIAL_OFFSET)*sin(PHI_BUMP_3_RAD)*MILLIMETRE,
-              end_position_y=(R0+BUMP_RADIAL_OFFSET)*(1-cos(PHI_BUMP_3_RAD))*MILLIMETRE,
-              end_normal_x=cos(PHI_BUMP_3_RAD),
-              end_normal_y=sin(PHI_BUMP_3_RAD); // drift to next bump magnet
-
-REAL PHI_BUMP_4_RAD=(-PHI_BUMP_3+PHI_BUMP_4)*FFA_CELL_LENGTH;
-bump_drift_4: LOCAL_CARTESIAN_OFFSET,
-              end_position_x= R0*sin(PHI_BUMP_4_RAD)*MILLIMETRE-BUMP_RADIAL_OFFSET*sin(PHI_BUMP_4_RAD)*MILLIMETRE,
-              end_position_y=R0*(1-cos(PHI_BUMP_4_RAD))*MILLIMETRE+BUMP_RADIAL_OFFSET*cos(PHI_BUMP_4_RAD)*MILLIMETRE,
-              end_normal_x=cos(PHI_BUMP_4_RAD),
-              end_normal_y=sin(PHI_BUMP_4_RAD);
-
-REAL PHI_SEPTUM_RAD=(-PHI_BUMP_4+PHI_SEPTUM)*FFA_CELL_LENGTH;
-septum_drift: LOCAL_CARTESIAN_OFFSET,
-              end_position_x=R0*sin(PHI_SEPTUM_RAD)*MILLIMETRE,
-              end_position_y=R0*(1-cos(PHI_SEPTUM_RAD))*MILLIMETRE,
-              end_normal_x=cos(PHI_SEPTUM_RAD),
-              end_normal_y=sin(PHI_SEPTUM_RAD); // drift to next bump magnet
-
-septum_offset: LOCAL_CARTESIAN_OFFSET,
-              end_position_x=0,
-              end_position_y=SEPTUM_OFFSET_DISTANCE*MILLIMETRE,
-              end_normal_x=1,
-              end_normal_y=0; // radial offset
-
-bump: Line = (bump_drift_1, bump_drift_tilt, magnetBump1, bump_drift_back, bump_drift_untilt,
-              bump_drift_2, bump_drift_tilt, magnetBump2, bump_drift_back, bump_drift_untilt,
-              bump_drift_3, bump_drift_tilt, magnetBump3, bump_drift_back, bump_drift_untilt,
-              bump_drift_4, bump_drift_tilt, magnetBump4, bump_drift_back, bump_drift_untilt,
-              septum_drift, septum_offset, magnetSeptum, 
-              FoilProbe);
+no_cavity: Line = (no_cavity_drift);
 
 ///////////// FIELD OUTPUT ////////////////////////////////////////////////////
 
@@ -511,8 +321,7 @@ l1: Line = (ringdef,
             cell, cell, cell, cell, cell,
             cell, cell, cell, cell, cell,
             cell, cell, cell, cell, cell
-            //, __cavity__
-            //, bump
+            , __cavity__
             , ringprobe
             , cellprobe
             , testprobe
